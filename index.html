@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Nova</title>
+<meta name="description" content="Nova, assistente pessoal por voz com briefing do dia, clima, notícias, tarefas, lembretes e memória.">
+<meta name="theme-color" content="#060c17">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Nova">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: HUD de cabine — 3 colunas no PC (dia/tarefas · conversa · memória), abas com barra inferior no celular */
+:root{
+  --bg:#060c17; --panel:#0b1524; --panel-2:#0f1d32; --line:#1c2f4b;
+  --fg:#d9e6f6; --muted:#7f95b4; --accent:#53d2ff; --accent-dim:#1d5c78;
+  --warm:#ffb648; --ok:#5fe0a4; --danger:#ff6f7f;
+  --f-display:"Chakra Petch",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:10px; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--f-body);overflow:hidden;
+  padding:env(safe-area-inset-top,0px) 0 0;
+  background-image:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(83,210,255,.10),transparent 70%),
+  linear-gradient(rgba(83,210,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(83,210,255,.035) 1px,transparent 1px);
+  background-size:auto,32px 32px,32px 32px}
+[hidden]{display:none!important}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.app{height:100%;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line);background:rgba(6,12,23,.75);backdrop-filter:blur(8px)}
+.brand{font-family:var(--f-display);font-weight:700;letter-spacing:.18em;text-transform:uppercase;font-size:18px;color:var(--accent)}
+.brand small{display:block;font:500 10px/1 var(--f-mono);letter-spacing:.14em;color:var(--muted);margin-top:3px}
+.top .spacer{flex:1}
+.clock{font:500 13px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
+.iconbtn{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--panel)}
+.iconbtn:hover{border-color:var(--accent-dim)}
+.iconbtn.on{border-color:var(--warm);color:var(--warm)}
+.iconbtn svg{width:18px;height:18px}
+
+.grid{flex:1;min-height:0;display:grid;grid-template-columns:minmax(260px,320px) minmax(0,1fr) minmax(240px,300px);gap:14px;padding:14px 16px}
+.col{min-height:0;display:flex;flex-direction:column;gap:14px;overflow:auto;scrollbar-width:thin}
+.panel{background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--line);border-radius:var(--r);padding:14px;position:relative}
+.panel::before{content:"";position:absolute;top:-1px;left:14px;width:36px;height:2px;background:var(--accent);opacity:.8}
+.ph{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.ph h2{margin:0;font:600 12px var(--f-display);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.tag{font:500 11px var(--f-mono);color:var(--muted)}
+.btn{border:1px solid var(--accent-dim);background:rgba(83,210,255,.08);color:var(--accent);border-radius:999px;padding:7px 14px;font:600 13px var(--f-display);letter-spacing:.06em;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:rgba(83,210,255,.16)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.ghost{border-color:var(--line);color:var(--fg);background:transparent}
+.empty{color:var(--muted);font-size:13px;margin:4px 0}
+
+.greet{font:600 22px/1.2 var(--f-display);margin:0 0 4px;text-wrap:balance}
+.date{color:var(--muted);font-size:13px;margin-bottom:12px}
+.date::first-letter{text-transform:uppercase}
+.wx{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:12px}
+.wx b{font:600 28px var(--f-mono);font-variant-numeric:tabular-nums}
+.wx .wd{font-size:13px;color:var(--muted);min-width:0}
+.wx .wd strong{display:block;color:var(--fg);font-weight:500}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat{border:1px solid var(--line);border-radius:8px;padding:8px;text-align:center}
+.stat b{display:block;font:600 20px var(--f-mono);font-variant-numeric:tabular-nums}
+.stat span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.stat.alert b{color:var(--warm)}
+.brief-text{font-size:14px;margin-top:10px;white-space:pre-wrap}
+.news{list-style:none;margin:0;padding:0}
+.news li{padding:8px 0;border-bottom:1px solid rgba(28,47,75,.6);font-size:13.5px}
+.news li:last-child{border-bottom:0}
+.news a{color:var(--fg);text-decoration:none}
+.news a:hover{color:var(--accent)}
+.news small{display:block;font:500 11px var(--f-mono);color:var(--muted);margin-top:2px}
+
+.addrow{display:flex;gap:6px;margin-bottom:10px}
+.addrow input{flex:1;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.addrow input[type=datetime-local]{flex:0 0 auto;width:44px;padding:8px 4px;color:transparent}
+.addrow input[type=datetime-local].has{width:auto;color:var(--fg)}
+.group-title{font:600 11px var(--f-display);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:12px 0 6px}
+.group-title.late{color:var(--warm)}
+.task{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid rgba(28,47,75,.6)}
+.task:last-child{border-bottom:0}
+.chk{flex:0 0 20px;height:20px;border-radius:6px;border:1.5px solid var(--accent-dim);background:transparent;display:grid;place-items:center;margin-top:1px}
+.task.done .chk{background:var(--ok);border-color:var(--ok)}
+.task.done .chk::after{content:"";width:9px;height:5px;border-left:2px solid var(--bg);border-bottom:2px solid var(--bg);transform:rotate(-45deg) translate(1px,-1px)}
+.tbody{flex:1;min-width:0}
+.ttitle{overflow-wrap:anywhere}
+.task.done .ttitle{text-decoration:line-through;color:var(--muted)}
+.tmeta{font:500 11px var(--f-mono);color:var(--muted)}
+.tmeta.late{color:var(--warm)}
+.del{border:0;background:transparent;color:var(--muted);width:26px;height:26px;border-radius:6px;opacity:.55}
+.del:hover{opacity:1;color:var(--danger)}
+details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:10px}
+
+.chat{flex:1;min-height:0;display:flex;flex-direction:column;padding:0;overflow:hidden}
+.core{display:flex;flex-direction:column;align-items:center;gap:6px;padding:18px 14px 8px}
+.orb{width:92px;height:92px;border-radius:50%;position:relative;display:grid;place-items:center}
+.orb i{position:absolute;inset:0;border-radius:50%;border:1.5px solid var(--accent);opacity:.35}
+.orb i:nth-child(2){inset:10px;border-style:dashed;opacity:.55;animation:spin 18s linear infinite}
+.orb i:nth-child(3){inset:24px;background:radial-gradient(circle,rgba(83,210,255,.55),rgba(83,210,255,.08) 70%);border:0;opacity:1;animation:pulse 3.2s ease-in-out infinite}
+.state{font:500 11px var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+[data-mode=thinking] .orb i:nth-child(2){animation-duration:2.2s}
+[data-mode=thinking] .orb i:nth-child(3){animation-duration:1s}
+[data-mode=speaking] .orb i:nth-child(3){animation:pulse .6s ease-in-out infinite}
+[data-mode=listening] .orb i{border-color:var(--warm)}
+[data-mode=listening] .orb i:nth-child(3){background:radial-gradient(circle,rgba(255,182,72,.6),rgba(255,182,72,.08) 70%);animation-duration:.9s}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{50%{transform:scale(.82);opacity:.7}}
+@media (prefers-reduced-motion:reduce){.orb i{animation:none!important}}
+
+.msgs{flex:1;min-height:0;overflow:auto;padding:8px 14px 14px;display:flex;flex-direction:column;gap:10px;scrollbar-width:thin}
+.msg{max-width:85%;padding:10px 13px;border-radius:12px;overflow-wrap:anywhere;font-size:14.5px}
+.msg.user{align-self:flex-end;background:rgba(83,210,255,.12);border:1px solid var(--accent-dim);border-bottom-right-radius:4px}
+.msg.bot{align-self:flex-start;background:var(--panel-2);border:1px solid var(--line);border-bottom-left-radius:4px}
+.msg.bot p{margin:0 0 8px}.msg.bot p:last-child{margin:0}
+.msg.bot ul{margin:4px 0 8px;padding-left:18px}
+.msg.bot code{font-family:var(--f-mono);font-size:13px;background:var(--bg);padding:1px 5px;border-radius:4px}
+.msg .act{display:flex;gap:6px;margin-top:6px}
+.msg .act button{border:0;background:transparent;color:var(--muted);font:500 11px var(--f-mono);padding:2px 4px}
+.msg .act button:hover{color:var(--accent)}
+.msg.note{align-self:center;font:500 12px var(--f-mono);color:var(--warm);background:transparent;padding:2px;text-align:center}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:0 14px 8px;scrollbar-width:none}
+.chip{flex:0 0 auto;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 12px;font-size:12.5px}
+.chip:hover{border-color:var(--accent-dim)}
+.composer{display:flex;gap:8px;align-items:flex-end;padding:10px 12px 12px;border-top:1px solid var(--line)}
+.composer textarea{flex:1;min-width:0;resize:none;max-height:140px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;line-height:1.4}
+.mic{width:44px;height:44px;border-radius:50%;border:1px solid var(--accent-dim);background:rgba(83,210,255,.08);color:var(--accent);display:grid;place-items:center;flex:0 0 auto}
+.mic.on{border-color:var(--warm);color:var(--warm);background:rgba(255,182,72,.12)}
+.send{width:44px;height:44px;border-radius:50%;border:0;background:var(--accent);color:var(--bg);display:grid;place-items:center;flex:0 0 auto}
+.send.stop{background:var(--danger)}
+.mic svg,.send svg{width:20px;height:20px}
+
+.mem{display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-bottom:1px solid rgba(28,47,75,.6);font-size:14px}
+.mem:last-child{border-bottom:0}
+.mem span{flex:1;min-width:0;overflow-wrap:anywhere}
+.mem::before{content:"";flex:0 0 6px;height:6px;margin-top:8px;border-radius:50%;background:var(--accent)}
+.hint{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+
+.sheet{position:fixed;inset:0;background:rgba(2,6,12,.7);display:grid;place-items:center;padding:16px;z-index:20}
+.sheet .panel{width:min(460px,100%);max-height:92%;overflow:auto}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.field label{font:600 11px var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.field input,.field select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px;min-width:0}
+.field small{color:var(--muted);font-size:12px}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.toggle input{width:20px;height:20px;accent-color:var(--accent);flex:0 0 auto}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.sep{border:0;border-top:1px dashed var(--line);margin:14px 0}
+.steps{margin:0 0 12px;padding-left:20px;font-size:14px}
+.steps li{margin-bottom:6px}
+
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--panel-2);border:1px solid var(--accent-dim);border-radius:14px;padding:9px 16px;font-size:13.5px;z-index:30;display:flex;gap:12px;align-items:center;max-width:calc(100% - 32px)}
+.toast.warn{border-color:var(--warm)}
+.toast button{border:0;background:transparent;color:var(--accent);font:600 13px var(--f-display)}
+
+.nav{display:none}
+@media (max-width:860px){
+  .grid{grid-template-columns:minmax(0,1fr);padding:12px 16px}
+  .col{display:none}
+  body[data-view=chat] .col.c-chat,body[data-view=brief] .col.c-brief,body[data-view=mem] .col.c-mem{display:flex}
+  .nav{display:flex;border-top:1px solid var(--line);background:rgba(6,12,23,.92);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))}
+  .nav button{flex:1;border:0;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;font:600 11px var(--f-display);letter-spacing:.08em;text-transform:uppercase;padding:6px 0}
+  .nav button[aria-current=true]{color:var(--accent)}
+  .nav svg{width:20px;height:20px}
+  .clock .d{display:none}
+  .msg{max-width:92%}
+  .top{gap:8px}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app" data-mode="idle">
+  <header class="top">
+    <div class="brand"><span id="brandName">Nova</span><small>Assistente pessoal</small></div>
+    <div class="spacer"></div>
+    <div class="clock"><div id="clk">--:--</div><div class="d" id="clkd"></div></div>
+    <button class="iconbtn" id="wakeBtn" aria-label="Escuta pela palavra de ativação" title="Escuta pela palavra de ativação"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12h2M6 8v8M10 5v14M14 8v8M18 10v4M22 12h0"/></svg></button>
+    <button class="iconbtn" id="voiceBtn" aria-label="Ligar ou desligar a voz" title="Voz das respostas"></button>
+    <button class="iconbtn" id="setBtn" aria-label="Ajustes" title="Ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </header>
+
+  <main class="grid">
+    <section class="col c-brief">
+      <div class="panel">
+        <div class="ph"><h2>Briefing do dia</h2><span class="tag" id="netTag"></span></div>
+        <p class="greet" id="greet">Olá</p>
+        <div class="date" id="today"></div>
+        <div class="wx" id="wx" hidden><b id="wxTemp">--°</b><div class="wd"><strong id="wxDesc"></strong><span id="wxMore"></span></div></div>
+        <div class="stats">
+          <div class="stat"><b id="stToday">0</b><span>Hoje</span></div>
+          <div class="stat" id="stLateBox"><b id="stLate">0</b><span>Atrasadas</span></div>
+          <div class="stat"><b id="stOpen">0</b><span>Abertas</span></div>
+        </div>
+        <button class="btn" id="briefBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Ouvir briefing</button>
+        <div class="brief-text" id="briefText"></div>
+      </div>
+      <div class="panel">
+        <div class="ph"><h2>Tarefas e lembretes</h2><span class="tag" id="taskCount"></span></div>
+        <form class="addrow" id="taskForm">
+          <input id="taskIn" placeholder="Nova tarefa" aria-label="Nova tarefa" autocomplete="off">
+          <input id="taskWhen" type="datetime-local" aria-label="Data e hora do lembrete" title="Data e hora (opcional)">
+          <button class="btn" type="submit" aria-label="Adicionar">+</button>
+        </form>
+        <div id="taskList"></div>
+      </div>
+      <div class="panel">
+        <div class="ph"><h2>Notícias</h2><span class="tag" id="newsTag"></span></div>
+        <ul class="news" id="newsList"><li class="empty">Carregando notícias…</li></ul>
+      </div>
+    </section>
+
+    <section class="col c-chat">
+      <div class="panel chat">
+        <div class="core"><div class="orb" aria-hidden="true"><i></i><i></i><i></i></div><div class="state" id="stateTxt">Pronta</div></div>
+        <div class="msgs" id="msgs" aria-live="polite"></div>
+        <div class="chips" id="chips"></div>
+        <form class="composer" id="form">
+          <button type="button" class="mic" id="micBtn" aria-label="Falar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+          <textarea id="input" rows="1" placeholder="Fale ou digite um pedido" aria-label="Mensagem"></textarea>
+          <button type="submit" class="send" id="sendBtn" aria-label="Enviar"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10.2 15 12 3.4 13.8z"/></svg></button>
+        </form>
+      </div>
+    </section>
+
+    <section class="col c-mem">
+      <div class="panel">
+        <div class="ph"><h2>Memória</h2><span class="tag" id="memCount"></span></div>
+        <form class="addrow" id="memForm">
+          <input id="memIn" placeholder="Algo que devo lembrar" aria-label="Nova memória" autocomplete="off">
+          <button class="btn" type="submit" aria-label="Salvar memória">+</button>
+        </form>
+        <div id="memList"></div>
+        <p class="hint">Fica salvo só neste aparelho. Para levar ao outro aparelho, use Exportar e Importar nos ajustes.</p>
+      </div>
+    </section>
+  </main>
+
+  <nav class="nav" aria-label="Seções">
+    <button data-v="brief"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Dia</button>
+    <button data-v="chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>Conversa</button>
+    <button data-v="mem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a6 6 0 0 0-6 6c0 2 1 3.5 2 4.5V17h8v-3.5c1-1 2-2.5 2-4.5a6 6 0 0 0-6-6zM9 21h6"/></svg>Memória</button>
+  </nav>
+</div>
+
+<!-- Primeira configuração -->
+<div class="sheet" id="setup" hidden>
+  <div class="panel" role="dialog" aria-label="Primeira configuração">
+    <div class="ph"><h2>Conectar a IA</h2></div>
+    <p style="margin-top:0">A Nova usa o Gemini do Google, no plano gratuito. Leva 1 minuto:</p>
+    <ol class="steps">
+      <li>Abra o <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> e entre com sua conta Google.</li>
+      <li>Toque em <strong>Create API key</strong> e copie a chave.</li>
+      <li>Cole abaixo. Ela fica salva só neste aparelho.</li>
+    </ol>
+    <div class="field"><label for="keyIn">Chave da API do Gemini</label><input id="keyIn" type="password" autocomplete="off" placeholder="AIza..."></div>
+    <div class="field"><label for="cityIn">Sua cidade (para o clima)</label><input id="cityIn" placeholder="Ex.: Belo Horizonte"></div>
+    <p class="hint" style="margin-top:0">No plano gratuito, o Google pode usar as conversas para melhorar os produtos dele. Evite enviar senhas, documentos ou dados bancários.</p>
+    <div class="row" style="margin-top:12px"><button class="btn" id="setupSave" type="button">Salvar e começar</button><button class="btn ghost" id="setupSkip" type="button">Depois</button></div>
+  </div>
+</div>
+
+<!-- Ajustes -->
+<div class="sheet" id="sheet" hidden>
+  <div class="panel" role="dialog" aria-label="Ajustes">
+    <div class="ph"><h2>Ajustes</h2><button class="iconbtn" id="closeSet" aria-label="Fechar">✕</button></div>
+    <div class="field"><label for="sName">Nome da assistente (palavra de ativação)</label><input id="sName" maxlength="24"></div>
+    <div class="field"><label for="sUser">Como devo te chamar</label><input id="sUser" maxlength="40"></div>
+    <div class="field"><label for="sCity">Cidade do clima</label><input id="sCity" maxlength="60"></div>
+    <div class="toggle"><label for="sSpeak">Ler respostas em voz alta</label><input type="checkbox" id="sSpeak"></div>
+    <div class="toggle"><label for="sLoop">Modo conversa (ouvir de novo após responder)</label><input type="checkbox" id="sLoop"></div>
+    <div class="field"><label for="sVoice">Voz</label><select id="sVoice"></select></div>
+    <div class="field"><label for="sRate">Velocidade da fala</label><input id="sRate" type="range" min="0.8" max="1.5" step="0.05"></div>
+    <hr class="sep">
+    <div class="field"><label for="sKey">Chave da API do Gemini</label><input id="sKey" type="password" autocomplete="off"><small>Crie em <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a></small></div>
+    <div class="field"><label for="sModel">Modelo</label><input id="sModel"><small>Padrão: gemini-flash-latest (gratuito)</small></div>
+    <div class="toggle"><label for="sNotif">Notificações dos lembretes</label><input type="checkbox" id="sNotif"></div>
+    <hr class="sep">
+    <div class="row">
+      <button class="btn ghost" id="exportBtn" type="button">Exportar dados</button>
+      <label class="btn ghost" for="importIn" style="cursor:pointer">Importar dados</label>
+      <input type="file" id="importIn" accept="application/json,.json" hidden>
+      <button class="btn ghost" id="clearChat" type="button">Limpar conversa</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>
