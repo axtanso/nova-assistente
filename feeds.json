@@ -1,0 +1,7 @@
+[
+  { "fonte": "g1", "categoria": "Geral", "url": "https://g1.globo.com/rss/g1/" },
+  { "fonte": "Agência Brasil", "categoria": "Geral", "url": "https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml" },
+  { "fonte": "Tecnoblog", "categoria": "Tecnologia", "url": "https://tecnoblog.net/feed/" },
+  { "fonte": "Olhar Digital", "categoria": "Tecnologia", "url": "https://olhardigital.com.br/feed/" },
+  { "fonte": "g1 Economia", "categoria": "Economia", "url": "https://g1.globo.com/rss/g1/economia/" }
+]
