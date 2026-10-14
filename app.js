@@ -6,7 +6,7 @@ const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString
 const KEY = "nova-v1";
 const DEF = {
   tasks: [], memory: [], chat: [], brief: null,
-  settings: { name: "Nova", user: "Luís Fernando", city: "", speak: true, loop: false, voice: "", rate: 1.05, engine: "gemini", character: "natural", ttsVoice: "Puck", ttsStyle: "", ttsModel: "gemini-3.8-flash-tts",
+  settings: { name: "Nova", user: "Luís Fernando", city: "", speak: true, loop: false, voice: "", rate: 1.05, engine: "gemini", character: "natural", ttsVoice: "Puck", ttsStyle: "", ttsModel: "gemini-3.8-flash-tts", wakePhrase: "Fala comigo N.O.V.A",
               apiKey: "", model: "gemini-flash-latest", notif: false, wake: false }
 };
 let S = load();
@@ -62,7 +62,7 @@ function toast(msg, warn, undo) {
   if (undo) { const b = document.createElement("button"); b.textContent = "Desfazer"; b.onclick = () => { undo(); el.hidden = true; }; el.append(b); }
   el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => el.hidden = true, undo ? 6000 : 4500);
 }
-function setMode(m, label) { $("#app").dataset.mode = m; $("#stateTxt").textContent = label || ({ idle: S.settings.wake ? "Diga \"" + S.settings.name + "\"" : "Pronta", thinking: "Pensando", speaking: "Falando", listening: "Ouvindo" }[m]); }
+function setMode(m, label) { $("#app").dataset.mode = m; $("#stateTxt").textContent = label || ({ idle: S.settings.wake ? "Escutando · diga \"" + (S.settings.wakePhrase || S.settings.name) + "\"" : "Pronta", thinking: "Pensando", speaking: "Falando", listening: "Ouvindo" }[m]); }
 
 /* ---------- clima (Open-Meteo, grátis, sem chave) ---------- */
 const WMO = { 0: "Céu limpo", 1: "Predomínio de sol", 2: "Parcialmente nublado", 3: "Nublado", 45: "Neblina", 48: "Neblina", 51: "Garoa fraca", 53: "Garoa", 55: "Garoa forte", 61: "Chuva fraca", 63: "Chuva", 65: "Chuva forte", 66: "Chuva congelante", 67: "Chuva congelante", 71: "Neve fraca", 73: "Neve", 75: "Neve forte", 80: "Pancadas fracas", 81: "Pancadas de chuva", 82: "Pancadas fortes", 95: "Trovoadas", 96: "Trovoadas com granizo", 99: "Trovoadas com granizo" };
@@ -344,36 +344,57 @@ function listen() {
   try { rec.start(); } catch (e) { toast("Não consegui abrir o microfone.", true); }
 }
 
-/* ---------- palavra de ativação ---------- */
+/* ---------- frase de ativação (ex.: "Fala comigo N.O.V.A") ---------- */
 let wakeRec = null, wakeOn = false, awaiting = false, wakeTimer = null;
+const LETTER_NAMES = { a: "a", be: "b", "bê": "b", ce: "c", "cê": "c", de: "d", "dê": "d", e: "e", "é": "e", "ê": "e", efe: "f", ge: "g", "gê": "g", aga: "h", i: "i", jota: "j", ca: "k", "cá": "k", ele: "l", eme: "m", ene: "n", o: "o", "ó": "o", "ô": "o", pe: "p", "pê": "p", que: "q", "quê": "q", erre: "r", esse: "s", te: "t", "tê": "t", u: "u", ve: "v", "vê": "v", dabliu: "w", xis: "x", ipsilon: "y", ze: "z", "zê": "z" };
+// Quebra a fala em palavras normalizadas, juntando letras soletradas ("n o v a" ou "ene ó vê a" vira "nova")
+function wakeTokens(text) {
+  const raw = String(text).toLowerCase().replace(/[.\-_]/g, " ").split(/\s+/).filter(Boolean);
+  const out = []; let run = [];
+  const flush = () => { if (run.length >= 3) out.push({ t: run.map(r => r.l).join(""), from: run[0].i, to: run[run.length - 1].i }); else run.forEach(r => out.push({ t: norm(r.w).replace(/[^a-z0-9]/g, ""), from: r.i, to: r.i })); run = []; };
+  raw.forEach((w, i) => { const c = w.replace(/[^\p{L}\p{N}]/gu, ""); const l = c.length === 1 ? norm(c) : LETTER_NAMES[c]; if (l) run.push({ l, w: c, i }); else { flush(); out.push({ t: norm(c).replace(/[^a-z0-9]/g, ""), from: i, to: i }); } });
+  flush(); return { tokens: out.filter(x => x.t), words: raw };
+}
+const near = (a, b) => a === b || (a.length >= 4 && b.length >= 4 && (a.startsWith(b) || b.startsWith(a)));
+// Procura a frase na fala; aceita a frase completa ou só o final dela ("comigo nova")
+function matchWake(text) {
+  const phrase = wakeTokens(S.settings.wakePhrase || S.settings.name || "Nova").tokens.map(x => x.t);
+  const { tokens, words } = wakeTokens(text); if (!phrase.length) return null;
+  const tries = phrase.length > 2 ? [phrase, phrase.slice(-2)] : [phrase];
+  for (const ph of tries) for (let i = 0; i + ph.length <= tokens.length; i++) {
+    if (ph.every((p, j) => near(tokens[i + j].t, p))) return { rest: words.slice(tokens[i + ph.length - 1].to + 1).join(" ").replace(/^[\s,.!?]+/, "") };
+  }
+  return null;
+}
 function startWake() {
-  if (!SR) { toast("A palavra de ativação precisa do Chrome ou Edge.", true); S.settings.wake = false; save(); renderTop(); return; }
+  if (!SR) { toast("A escuta contínua precisa do Edge ou do Chrome.", true); S.settings.wake = false; save(); renderTop(); return; }
   if (wakeOn || busy || speaking || listening) return;
   wakeRec = new SR(); wakeRec.lang = "pt-BR"; wakeRec.continuous = true; wakeRec.interimResults = false;
-  const word = norm(S.settings.name || "Nova");
   wakeRec.onresult = e => {
     const r = e.results[e.results.length - 1]; if (!r.isFinal) return;
-    const said = r[0].transcript.trim(); const n = norm(said);
-    if (awaiting) { awaiting = false; clearTimeout(wakeTimer); if (said) { stopWake(); send(said); } return; }
-    const i = n.indexOf(word);
-    if (i >= 0) {
-      const rest = said.slice(i + word.length).replace(/^[\s,.!?]+/, "");
-      if (rest.length > 3) { stopWake(); send(rest); }
-      else { awaiting = true; setMode("listening"); beep(); clearTimeout(wakeTimer); wakeTimer = setTimeout(() => { awaiting = false; setMode("idle"); }, 8000); }
+    const said = r[0].transcript.trim();
+    if (awaiting) { awaiting = false; clearTimeout(wakeTimer); if (said.length > 1) { stopWake(); send(said); } return; }
+    const m = matchWake(said);
+    if (m) {
+      if (m.rest.length > 3) { stopWake(); beep(); send(m.rest); }
+      else { awaiting = true; setMode("listening", "Pode falar"); beep(true); clearTimeout(wakeTimer); wakeTimer = setTimeout(() => { awaiting = false; setMode("idle"); }, 9000); }
     }
   };
   wakeRec.onerror = e => { if (e.error === "not-allowed" || e.error === "service-not-allowed") { micError(e.error); S.settings.wake = false; save(); renderTop(); } };
   wakeRec.onend = () => { wakeOn = false; if (S.settings.wake && !busy && !speaking && !listening) setTimeout(startWake, 400); };
   try { wakeRec.start(); wakeOn = true; setMode("idle"); } catch (e) { wakeOn = false; }
 }
+// Vigia: se o navegador derrubar a escuta (rede, suspensão), religa sozinha
+setInterval(() => { if (S.settings.wake && !wakeOn && !busy && !speaking && !listening) startWake(); }, 15000);
 function stopWake() { if (wakeRec) { const r = wakeRec; wakeRec = null; r.onend = () => { wakeOn = false; }; try { r.abort(); } catch (e) {} } wakeOn = false; }
 function pauseWake() { if (wakeOn) stopWake(); }
 function resumeWake() { if (S.settings.wake) setTimeout(startWake, 300); }
 let actx;
-function beep() {
-  try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); const o = actx.createOscillator(), g = actx.createGain();
-    o.frequency.value = 880; g.gain.setValueAtTime(.08, actx.currentTime); g.gain.exponentialRampToValueAtTime(.0001, actx.currentTime + .18);
-    o.connect(g).connect(actx.destination); o.start(); o.stop(actx.currentTime + .2); } catch (e) {}
+function beep(two) {
+  try { actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    [880, two ? 1320 : 0].forEach((f, k) => { if (!f) return; const o = actx.createOscillator(), g = actx.createGain(), t0 = actx.currentTime + k * .14;
+      o.frequency.value = f; g.gain.setValueAtTime(.08, t0); g.gain.exponentialRampToValueAtTime(.0001, t0 + .16);
+      o.connect(g).connect(actx.destination); o.start(t0); o.stop(t0 + .18); }); } catch (e) {}
 }
 
 /* ---------- IA: Gemini API ---------- */
@@ -565,7 +586,7 @@ $("#briefBtn").onclick = briefing;
 $("#voiceBtn").onclick = () => { S.settings.speak = !S.settings.speak; if (!S.settings.speak) stopSpeech(); save(); renderTop(); toast(S.settings.speak ? "Voz ligada" : "Voz desligada"); };
 $("#wakeBtn").onclick = () => {
   S.settings.wake = !S.settings.wake; save(); renderTop();
-  if (S.settings.wake) { startWake(); toast(`Escutando. Diga "${S.settings.name}" e o pedido.`); } else { stopWake(); awaiting = false; setMode("idle"); toast("Escuta desligada"); }
+  if (S.settings.wake) { startWake(); toast(`Escuta ligada. Diga "${S.settings.wakePhrase || S.settings.name}" e o seu pedido.`); } else { stopWake(); awaiting = false; setMode("idle"); toast("Escuta desligada"); }
 };
 $("#taskWhen").addEventListener("change", e => e.target.classList.toggle("has", !!e.target.value));
 $("#taskForm").addEventListener("submit", e => {
@@ -604,20 +625,20 @@ $("#setupSkip").onclick = () => { $("#setup").hidden = true; try { localStorage.
 $("#setBtn").onclick = () => {
   const s = S.settings; $("#sName").value = s.name; $("#sUser").value = s.user; $("#sCity").value = s.city; $("#sSpeak").checked = s.speak; $("#sLoop").checked = s.loop;
   $("#sVoice").value = s.voice || ""; $("#sRate").value = s.rate; $("#sEngine").value = s.engine; $("#sChar").value = s.character;
-  $("#sTtsVoice").value = s.ttsVoice; $("#sTtsStyle").value = s.ttsStyle; syncVoiceUI(); $("#sKey").value = s.apiKey; $("#sModel").value = s.model; $("#sNotif").checked = s.notif; $("#sheet").hidden = false;
+  $("#sWake").value = s.wakePhrase || ""; $("#sTtsVoice").value = s.ttsVoice; $("#sTtsStyle").value = s.ttsStyle; syncVoiceUI(); $("#sKey").value = s.apiKey; $("#sModel").value = s.model; $("#sNotif").checked = s.notif; $("#sheet").hidden = false;
 };
 async function closeSet() {
   const s = S.settings, oldCity = s.city, oldName = s.name;
   s.name = $("#sName").value.trim() || "Nova"; s.user = $("#sUser").value.trim() || "você"; s.city = $("#sCity").value.trim();
   s.speak = $("#sSpeak").checked; s.loop = $("#sLoop").checked; s.voice = $("#sVoice").value; s.rate = +$("#sRate").value || 1;
-  s.engine = $("#sEngine").value; s.character = $("#sChar").value; s.ttsVoice = $("#sTtsVoice").value; s.ttsStyle = $("#sTtsStyle").value.trim().slice(0, 300);
+  s.engine = $("#sEngine").value; s.character = $("#sChar").value; s.ttsVoice = $("#sTtsVoice").value; s.ttsStyle = $("#sTtsStyle").value.trim().slice(0, 300); s.wakePhrase = $("#sWake").value.trim().slice(0, 60) || "Fala comigo N.O.V.A";
   s.apiKey = $("#sKey").value.trim(); s.model = $("#sModel").value.trim() || "gemini-flash-latest";
   const wantNotif = $("#sNotif").checked;
   if (wantNotif && "Notification" in window && Notification.permission !== "granted") { const p = await Notification.requestPermission(); s.notif = p === "granted"; if (!s.notif) toast("Notificações bloqueadas pelo navegador.", true); }
   else s.notif = wantNotif && "Notification" in window;
   $("#sheet").hidden = true; save(); render();
   if (s.city !== oldCity) loadWeather();
-  if (s.name !== oldName && s.wake) { stopWake(); startWake(); }
+  if (s.wake) { stopWake(); startWake(); }
 }
 $("#closeSet").onclick = closeSet; $("#sheet").addEventListener("click", e => { if (e.target.id === "sheet") closeSet(); });
 $("#clearChat").onclick = () => { const old = S.chat; S.chat = []; save(); renderChat(); toast("Conversa limpa", false, () => { S.chat = old; save(); renderChat(); }); };
