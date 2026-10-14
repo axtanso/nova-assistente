@@ -1,5 +1,5 @@
 // Service worker da Nova: abre sem internet e mantém o app atualizado.
-const VERSION = "nova-v3";
+const VERSION = "nova-v4";
 const SHELL = ["./", "index.html", "app.js", "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png"];
 
 self.addEventListener("install", e => {

@@ -6,7 +6,7 @@ const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString
 const KEY = "nova-v1";
 const DEF = {
   tasks: [], memory: [], chat: [], brief: null,
-  settings: { name: "Nova", user: "Luís Fernando", city: "", speak: true, loop: false, voice: "", rate: 1.05,
+  settings: { name: "Nova", user: "Luís Fernando", city: "", speak: true, loop: false, voice: "", rate: 1.05, engine: "gemini", character: "natural", ttsVoice: "Puck", ttsStyle: "", ttsModel: "gemini-3.8-flash-tts",
               apiKey: "", model: "gemini-flash-latest", notif: false, wake: false }
 };
 let S = load();
@@ -214,9 +214,91 @@ function pickVoice() {
 let warnedVoice = false;
 if ("speechSynthesis" in window) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
 let speaking = false;
-function speak(text, force) {
-  if (!("speechSynthesis" in window) || (!S.settings.speak && !force)) { afterSpeak(); return; }
-  speechSynthesis.cancel(); pauseWake();
+
+/* ---------- voz IA (Gemini TTS, grátis com a mesma chave) ---------- */
+// Personagens originais. Nenhum imita pessoa ou personagem real.
+const CHARACTERS = {
+  natural:   { nome: "Nova (natural)",            voz: "Aoede",   estilo: "natural, simpática e calorosa, como uma amiga conversando" },
+  desenho:   { nome: "Narrador de desenho clássico", voz: "Fenrir", estilo: "como o narrador empolgado de um desenho animado clássico dos anos 80: teatral, exagerado, cheio de energia e bom humor" },
+  heroi:     { nome: "Herói de desenho",           voz: "Alnilam", estilo: "como um herói confiante de desenho animado antigo: voz firme, épica e corajosa, sempre otimista" },
+  vilao:     { nome: "Vilão trapalhão",            voz: "Algenib", estilo: "como um vilão trapalhão de desenho animado: rouco, dramático e engraçado, que se acha muito esperto" },
+  robo:      { nome: "Robô retrô",                 voz: "Iapetus", estilo: "como um robozinho simpático de desenho dos anos 60: cadenciado, preciso e levemente metálico, mas gentil" },
+  vovo:      { nome: "Vovó contadora de histórias", voz: "Sulafat", estilo: "como uma avó carinhosa contando história antes de dormir: calma, acolhedora e sorridente" },
+  radio:     { nome: "Locutor de rádio",           voz: "Charon",  estilo: "como um locutor de rádio FM: grave, confiante e envolvente" },
+  custom:    { nome: "Personalizado",              voz: "Puck",    estilo: "" }
+};
+const GEMINI_VOICES = { Zephyr: "Brilhante", Puck: "Animada", Charon: "Informativa", Kore: "Firme", Fenrir: "Empolgada", Leda: "Jovem", Orus: "Firme", Aoede: "Leve", Callirrhoe: "Tranquila", Autonoe: "Brilhante", Enceladus: "Sussurrada", Iapetus: "Clara", Umbriel: "Tranquila", Algieba: "Suave", Despina: "Suave", Erinome: "Clara", Algenib: "Rouca", Rasalgethi: "Informativa", Laomedeia: "Animada", Achernar: "Macia", Alnilam: "Firme", Schedar: "Equilibrada", Gacrux: "Madura", Pulcherrima: "Direta", Achird: "Amigável", Zubenelgenubi: "Casual", Vindemiatrix: "Gentil", Sadachbia: "Viva", Sadaltager: "Experiente", Sulafat: "Calorosa" };
+let currentAudio = null, ttsCtl = null;
+function stopSpeech() {
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  if (ttsCtl) { ttsCtl.abort(); ttsCtl = null; }
+  if (currentAudio) { currentAudio.onended = null; currentAudio.pause(); URL.revokeObjectURL(currentAudio.src); currentAudio = null; }
+  if (speaking) { speaking = false; setMode("idle"); }
+}
+function charConf() {
+  const c = CHARACTERS[S.settings.character] || CHARACTERS.natural;
+  const voz = S.settings.character === "custom" ? (S.settings.ttsVoice || c.voz) : c.voz;
+  const estilo = S.settings.character === "custom" ? (S.settings.ttsStyle || "natural e simpática") : c.estilo;
+  return { voz, estilo: estilo + ". Fale em português do Brasil, com sotaque brasileiro natural." };
+}
+function findAudio(o) { // procura o áudio em base64 na resposta, seja qual for o formato
+  if (!o || typeof o !== "object") return null;
+  if (typeof o.data === "string" && o.data.length > 200 && (o.type === "audio" || /audio/.test(o.mime_type || o.mimeType || ""))) return { data: o.data, mime: o.mime_type || o.mimeType || "" };
+  if (o.inlineData && typeof o.inlineData.data === "string") return { data: o.inlineData.data, mime: o.inlineData.mimeType || "" };
+  for (const v of Object.values(o)) { const r = findAudio(v); if (r) return r; }
+  return null;
+}
+function toWav(bytes, rate) {
+  if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46) return new Blob([bytes], { type: "audio/wav" }); // já é WAV
+  const h = new DataView(new ArrayBuffer(44)); const w = (o, s) => [...s].forEach((c, i) => h.setUint8(o + i, c.charCodeAt(0)));
+  w(0, "RIFF"); h.setUint32(4, 36 + bytes.length, true); w(8, "WAVE"); w(12, "fmt "); h.setUint32(16, 16, true); h.setUint16(20, 1, true); h.setUint16(22, 1, true);
+  h.setUint32(24, rate, true); h.setUint32(28, rate * 2, true); h.setUint16(32, 2, true); h.setUint16(34, 16, true); w(36, "data"); h.setUint32(40, bytes.length, true);
+  return new Blob([h.buffer, bytes], { type: "audio/wav" });
+}
+let ttsCooldown = 0;
+async function geminiSpeak(text) {
+  const key = (S.settings.apiKey || "").trim(); if (!key || !navigator.onLine || Date.now() < ttsCooldown) return false;
+  const { voz, estilo } = charConf();
+  ttsCtl = new AbortController(); const signal = ttsCtl.signal;
+  for (const model of [S.settings.ttsModel || "gemini-3.8-flash-tts", "gemini-3.8-flash-lite-tts"]) {
+    let r;
+    try {
+      r = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", { method: "POST", signal,
+        headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+        body: JSON.stringify({ model, input: [{ type: "user_input", content: [{ type: "text", text, annotations: [{ type: "speech_metadata", style: estilo }] }] }],
+          response_format: { type: "audio" }, generation_config: { speech_config: [{ voice: voz }] } }) });
+    } catch (e) { return e.name === "AbortError" ? "cancelled" : false; }
+    if (!r.ok) { if (r.status === 429) ttsCooldown = Date.now() + 60000; continue; }
+    const a = findAudio(await r.json()); if (!a) continue;
+    const bin = atob(a.data); const bytes = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const rate = +((a.mime.match(/rate=(\d+)/) || [])[1]) || 24000;
+    if (signal.aborted) return "cancelled";
+    setMode("speaking");
+    return new Promise(res => {
+      const au = new Audio(URL.createObjectURL(toWav(bytes, rate))); currentAudio = au;
+      au.onended = () => { URL.revokeObjectURL(au.src); currentAudio = null; res(true); };
+      au.onerror = () => { currentAudio = null; res(false); };
+      au.play().catch(() => { currentAudio = null; res(false); });
+    });
+  }
+  return false;
+}
+async function speak(text, force) {
+  if (!S.settings.speak && !force) { afterSpeak(); return; }
+  stopSpeech(); pauseWake();
+  if (S.settings.engine !== "browser" && S.settings.apiKey) {
+    let t = plain(text).trim(); if (t.length > 1200) t = t.slice(0, 1200).replace(/[^.!?]*$/, "") || t.slice(0, 1200);
+    speaking = true; setMode("thinking", "Preparando a voz");
+    const ok = await geminiSpeak(t.replace(/^\s*(lembrete:)/i, "$1 "));
+    if (ok === "cancelled") return;
+    if (ok) { speaking = false; setMode("idle"); afterSpeak(); return; }
+    speaking = false; // voz IA indisponível agora: usa a do navegador
+  }
+  browserSpeak(text);
+}
+function browserSpeak(text) {
+  if (!("speechSynthesis" in window)) { afterSpeak(); return; }
+  speechSynthesis.cancel();
   const chunks = plain(text).match(/[^.!?;:]+[.!?;:]*\s*/g) || []; const parts = []; let cur = "";
   for (const c of chunks) { if ((cur + c).length > 200) { if (cur) parts.push(cur); cur = c; } else cur += c; }
   if (cur.trim()) parts.push(cur);
@@ -249,7 +331,7 @@ function micError(e) {
 function listen() {
   if (!SR) { toast("Este navegador não reconhece fala. Use o Chrome ou o ditado do teclado.", true); $("#input").focus(); return; }
   if (listening) { rec && rec.stop(); return; }
-  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  stopSpeech();
   pauseWake();
   rec = new SR(); rec.lang = "pt-BR"; rec.interimResults = true; rec.continuous = false; let finalT = "";
   rec.onstart = () => { listening = true; $("#micBtn").classList.add("on"); setMode("listening"); };
@@ -390,7 +472,7 @@ let busy = false, ctl = null;
 async function send(text) {
   text = (text || "").trim(); if (!text || busy) return;
   if (!S.settings.apiKey) { openSetup(); return; }
-  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  stopSpeech();
   pauseWake();
   busy = true; $("#input").value = ""; grow(); setSendStop(true);
   S.chat.push({ role: "user", content: text.slice(0, 4000) });
@@ -480,7 +562,7 @@ $("#input").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shift
 $("#form").addEventListener("submit", e => { e.preventDefault(); if (busy) { ctl && ctl.abort(); return; } send($("#input").value); });
 $("#micBtn").onclick = listen;
 $("#briefBtn").onclick = briefing;
-$("#voiceBtn").onclick = () => { S.settings.speak = !S.settings.speak; if (!S.settings.speak && "speechSynthesis" in window) { speechSynthesis.cancel(); speaking = false; setMode("idle"); } save(); renderTop(); toast(S.settings.speak ? "Voz ligada" : "Voz desligada"); };
+$("#voiceBtn").onclick = () => { S.settings.speak = !S.settings.speak; if (!S.settings.speak) stopSpeech(); save(); renderTop(); toast(S.settings.speak ? "Voz ligada" : "Voz desligada"); };
 $("#wakeBtn").onclick = () => {
   S.settings.wake = !S.settings.wake; save(); renderTop();
   if (S.settings.wake) { startWake(); toast(`Escutando. Diga "${S.settings.name}" e o pedido.`); } else { stopWake(); awaiting = false; setMode("idle"); toast("Escuta desligada"); }
@@ -495,6 +577,23 @@ $("#memForm").addEventListener("submit", e => { e.preventDefault(); const v = $(
 document.querySelectorAll(".nav button").forEach(b => b.onclick = () => setView(b.dataset.v));
 function setView(v) { document.body.dataset.view = v; document.querySelectorAll(".nav button").forEach(b => b.setAttribute("aria-current", b.dataset.v === v)); try { localStorage.setItem("nova-view", v); } catch (e) {} }
 
+
+/* ---------- ajustes de voz ---------- */
+$("#sChar").innerHTML = Object.entries(CHARACTERS).map(([k, c]) => `<option value="${k}">${esc(c.nome)}</option>`).join("");
+$("#sTtsVoice").innerHTML = Object.entries(GEMINI_VOICES).map(([k, d]) => `<option value="${k}">${k} · ${d}</option>`).join("");
+function syncVoiceUI() {
+  const ai = $("#sEngine").value !== "browser";
+  $("#aiVoiceBox").hidden = !ai; $("#browserVoiceBox").hidden = ai;
+  $("#customBox").hidden = $("#sChar").value !== "custom";
+}
+$("#sEngine").addEventListener("change", syncVoiceUI); $("#sChar").addEventListener("change", syncVoiceUI);
+$("#sampleBtn").onclick = async () => {
+  const keep = { ...S.settings };
+  Object.assign(S.settings, { engine: $("#sEngine").value, character: $("#sChar").value, ttsVoice: $("#sTtsVoice").value, ttsStyle: $("#sTtsStyle").value, voice: $("#sVoice").value, rate: +$("#sRate").value || 1, apiKey: $("#sKey").value.trim() || keep.apiKey });
+  const b = $("#sampleBtn"); b.disabled = true; b.textContent = "Gerando…";
+  await speak(`Oi, ${(S.settings.user || "").split(" ")[0]}! Esta é a minha voz. O que vamos fazer hoje?`, true);
+  S.settings = keep; b.disabled = false; b.textContent = "▶ Ouvir amostra";
+};
 function openSetup() { $("#keyIn").value = S.settings.apiKey || ""; $("#cityIn").value = S.settings.city || ""; $("#setup").hidden = false; }
 $("#setupSave").onclick = () => {
   const k = $("#keyIn").value.trim(); if (!k) { toast("Cole a chave do Gemini para continuar.", true); return; }
@@ -504,12 +603,14 @@ $("#setupSkip").onclick = () => { $("#setup").hidden = true; try { localStorage.
 
 $("#setBtn").onclick = () => {
   const s = S.settings; $("#sName").value = s.name; $("#sUser").value = s.user; $("#sCity").value = s.city; $("#sSpeak").checked = s.speak; $("#sLoop").checked = s.loop;
-  $("#sVoice").value = s.voice || ""; $("#sRate").value = s.rate; $("#sKey").value = s.apiKey; $("#sModel").value = s.model; $("#sNotif").checked = s.notif; $("#sheet").hidden = false;
+  $("#sVoice").value = s.voice || ""; $("#sRate").value = s.rate; $("#sEngine").value = s.engine; $("#sChar").value = s.character;
+  $("#sTtsVoice").value = s.ttsVoice; $("#sTtsStyle").value = s.ttsStyle; syncVoiceUI(); $("#sKey").value = s.apiKey; $("#sModel").value = s.model; $("#sNotif").checked = s.notif; $("#sheet").hidden = false;
 };
 async function closeSet() {
   const s = S.settings, oldCity = s.city, oldName = s.name;
   s.name = $("#sName").value.trim() || "Nova"; s.user = $("#sUser").value.trim() || "você"; s.city = $("#sCity").value.trim();
   s.speak = $("#sSpeak").checked; s.loop = $("#sLoop").checked; s.voice = $("#sVoice").value; s.rate = +$("#sRate").value || 1;
+  s.engine = $("#sEngine").value; s.character = $("#sChar").value; s.ttsVoice = $("#sTtsVoice").value; s.ttsStyle = $("#sTtsStyle").value.trim().slice(0, 300);
   s.apiKey = $("#sKey").value.trim(); s.model = $("#sModel").value.trim() || "gemini-flash-latest";
   const wantNotif = $("#sNotif").checked;
   if (wantNotif && "Notification" in window && Notification.permission !== "granted") { const p = await Notification.requestPermission(); s.notif = p === "granted"; if (!s.notif) toast("Notificações bloqueadas pelo navegador.", true); }

@@ -279,8 +279,21 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:10px
     <div class="field"><label for="sCity">Cidade do clima</label><input id="sCity" maxlength="60"></div>
     <div class="toggle"><label for="sSpeak">Ler respostas em voz alta</label><input type="checkbox" id="sSpeak"></div>
     <div class="toggle"><label for="sLoop">Modo conversa (ouvir de novo após responder)</label><input type="checkbox" id="sLoop"></div>
-    <div class="field"><label for="sVoice">Voz</label><select id="sVoice"></select></div>
-    <div class="field"><label for="sRate">Velocidade da fala</label><input id="sRate" type="range" min="0.8" max="1.5" step="0.05"></div>
+    <div class="field"><label for="sEngine">Tipo de voz</label>
+      <select id="sEngine"><option value="gemini">Voz IA do Gemini (mais natural, com personagens)</option><option value="browser">Voz do navegador (instantânea)</option></select></div>
+    <div id="aiVoiceBox">
+      <div class="field"><label for="sChar">Personagem</label><select id="sChar"></select><small>Personagens originais, inspirados em estilos de desenho clássico.</small></div>
+      <div id="customBox">
+        <div class="field"><label for="sTtsVoice">Timbre</label><select id="sTtsVoice"></select></div>
+        <div class="field"><label for="sTtsStyle">Como ela deve falar</label><input id="sTtsStyle" maxlength="300" placeholder="Ex.: como um pirata animado de desenho antigo"></div>
+      </div>
+      <p class="hint" style="margin-top:0">Se a voz IA estiver indisponível ou no limite gratuito, a Nova usa a voz do navegador.</p>
+    </div>
+    <div id="browserVoiceBox">
+      <div class="field"><label for="sVoice">Voz do navegador</label><select id="sVoice"></select></div>
+      <div class="field"><label for="sRate">Velocidade da fala</label><input id="sRate" type="range" min="0.8" max="1.5" step="0.05"></div>
+    </div>
+    <button class="btn" id="sampleBtn" type="button" style="margin-bottom:12px">▶ Ouvir amostra</button>
     <hr class="sep">
     <div class="field"><label for="sKey">Chave da API do Gemini</label><input id="sKey" type="password" autocomplete="off"><small>Crie em <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a></small></div>
     <div class="field"><label for="sModel">Modelo</label><input id="sModel"><small>Padrão: gemini-flash-latest (gratuito)</small></div>
