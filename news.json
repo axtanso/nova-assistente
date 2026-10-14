@@ -1,1 +1,215 @@
-{"atualizado":null,"itens":[]}
+{
+ "atualizado": "2026-10-14T21:47:10.870Z",
+ "itens": [
+  {
+   "titulo": "Assista aos telejornais da TV Liberal",
+   "link": "https://g1.globo.com/pa/para/ao-vivo/assista-aos-telejornais-da-tv-liberal.ghtml",
+   "fonte": "g1",
+   "categoria": "Geral",
+   "data": "2026-10-14T21:45:50.000Z"
+  },
+  {
+   "titulo": "Com chuva forte em SP, ruas ficam alagadas, carros boiam no túnel do Anhangabaú e lago do Ibirapuera transborda",
+   "link": "https://g1.globo.com/sp/sao-paulo/ao-vivo/chuva-forte-deixa-ruas-alagadas-nesta-quarta-feira-em-sao-paulo.ghtml",
+   "fonte": "g1",
+   "categoria": "Geral",
+   "data": "2026-10-14T21:45:41.000Z"
+  },
+  {
+   "titulo": "Senadores debatem fim da escala 6x1",
+   "link": "https://g1.globo.com/trabalho-e-carreira/ao-vivo/senado-pec-fim-escalada-6x1.ghtml",
+   "fonte": "g1",
+   "categoria": "Geral",
+   "data": "2026-10-14T21:43:37.000Z"
+  },
+  {
+   "titulo": "AO VIVO: Assista ao GR2",
+   "link": "https://g1.globo.com/pe/petrolina-regiao/ao-vivo/ao-vivo-assista-ao-gr2.ghtml",
+   "fonte": "g1",
+   "categoria": "Geral",
+   "data": "2026-10-14T21:42:58.000Z"
+  },
+  {
+   "titulo": "Assista ao Jornal Vanguarda ao vivo no g1",
+   "link": "https://g1.globo.com/sp/vale-do-paraiba-regiao/ao-vivo/assista-ao-jornal-vanguarda-ao-vivo-no-g1.ghtml",
+   "fonte": "g1",
+   "categoria": "Geral",
+   "data": "2026-10-14T21:39:18.000Z"
+  },
+  {
+   "titulo": "Círio de Nazaré 2026: reveja a transmissão da Grande Procissão pela TV Liberal",
+   "link": "https://g1.globo.com/pa/para/cirio-de-nazare/noticia/2026/10/14/cirio-de-nazare-2026-reveja-a-transmissao-da-grande-procissao-pela-tv-liberal.ghtml",
+   "fonte": "g1",
+   "categoria": "Geral",
+   "data": "2026-10-14T21:38:33.000Z"
+  },
+  {
+   "titulo": "Estados americanos processam OpenAI e acusam ChatGPT de incentivar automutilação em jovens",
+   "link": "https://g1.globo.com/tecnologia/noticia/2026/10/14/estados-americanos-processam-openai-e-acusam-chatgpt-de-incentivar-automutilacao-em-jovens.ghtml",
+   "fonte": "g1 Economia",
+   "categoria": "Economia",
+   "data": "2026-10-14T21:15:02.000Z"
+  },
+  {
+   "titulo": "MPF investiga Meta e X por bloqueios e remoções de conteúdo nas eleições 2026",
+   "link": "https://olhardigital.com.br/2026/10/14/pro/mpf-investiga-meta-e-x-por-bloqueios-e-remocoes-de-conteudo-nas-eleicoes-2026/",
+   "fonte": "Olhar Digital",
+   "categoria": "Tecnologia",
+   "data": "2026-10-14T21:05:02.000Z"
+  },
+  {
+   "titulo": "Governo da Colômbia assina decreto que criminaliza protestos sociais",
+   "link": "https://agenciabrasil.ebc.com.br/internacional/noticia/2026-10/governo-da-colombia-assina-decreto-que-criminaliza-protestos-sociais",
+   "fonte": "Agência Brasil",
+   "categoria": "Geral",
+   "data": "2026-10-14T21:03:00.000Z"
+  },
+  {
+   "titulo": "Dez anos após anúncio, Starship ainda enfrenta desafios para chegar a Marte",
+   "link": "https://olhardigital.com.br/2026/10/14/ciencia-e-espaco/dez-anos-apos-anuncio-starship-ainda-enfrenta-desafios-para-chegar-a-marte/",
+   "fonte": "Olhar Digital",
+   "categoria": "Tecnologia",
+   "data": "2026-10-14T21:00:43.000Z"
+  },
+  {
+   "titulo": "Entenda o linfoma não Hodgkin, câncer que causou morte de Netinho",
+   "link": "https://agenciabrasil.ebc.com.br/saude/noticia/2026-10/entenda-o-linfoma-nao-hodgkin-cancer-que-causou-morte-de-netinho",
+   "fonte": "Agência Brasil",
+   "categoria": "Geral",
+   "data": "2026-10-14T20:44:00.000Z"
+  },
+  {
+   "titulo": "Gol corta voos após preço do combustível dobrar; veja o que muda para passageiros",
+   "link": "https://g1.globo.com/economia/noticia/2026/10/14/gol-corta-voos-apos-preco-do-combustivel-dobrar-veja-o-que-muda-para-passageiros.ghtml",
+   "fonte": "g1 Economia",
+   "categoria": "Economia",
+   "data": "2026-10-14T20:28:53.000Z"
+  },
+  {
+   "titulo": "Robô humanoide suspeito de assédio é apreendido na Alemanha",
+   "link": "https://olhardigital.com.br/2026/10/14/robotica/robo-humanoide-suspeito-de-assedio-e-apreendido-na-alemanha/",
+   "fonte": "Olhar Digital",
+   "categoria": "Tecnologia",
+   "data": "2026-10-14T20:21:06.000Z"
+  },
+  {
+   "titulo": "Netflix demite 1.000 funcionários em maior corte desde 2022",
+   "link": "https://tecnoblog.net/noticias/netflix-demite-1-000-funcionarios-em-maior-corte-desde-2022/",
+   "fonte": "Tecnoblog",
+   "categoria": "Tecnologia",
+   "data": "2026-10-14T20:05:49.000Z"
+  },
+  {
+   "titulo": "Campanha de Lula vai ao TSE após IA da Meta restringir buscas",
+   "link": "https://agenciabrasil.ebc.com.br/justica/noticia/2026-10/campanha-de-lula-vai-ao-tse-apos-ia-da-meta-restringir-buscas",
+   "fonte": "Agência Brasil",
+   "categoria": "Geral",
+   "data": "2026-10-14T20:05:00.000Z"
+  },
+  {
+   "titulo": "Demanda por IA faz fabricante de máquinas de chips elevar previsão de vendas",
+   "link": "https://olhardigital.com.br/2026/10/14/pro/demanda-por-ia-faz-fabricante-de-maquinas-de-chips-elevar-previsao-de-vendas/",
+   "fonte": "Olhar Digital",
+   "categoria": "Tecnologia",
+   "data": "2026-10-14T19:58:27.000Z"
+  },
+  {
+   "titulo": "Galaxy Tab S11 tem oferta para quem busca tablet para jogos",
+   "link": "https://tecnoblog.net/achados/galaxy-tab-s11-tem-oferta-para-quem-busca-tablet-para-jogos/",
+   "fonte": "Tecnoblog",
+   "categoria": "Tecnologia",
+   "data": "2026-10-14T19:53:02.000Z"
+  },
+  {
+   "titulo": "Smartwatch bom e barato? Separamos uma seleção imperdível para você monitorar tudo no pulso",
+   "link": "https://olhardigital.com.br/2026/10/14/reviews/smartwatch-bom-e-barato-separamos-uma-selecao-imperdivel-para-voce-monitorar-tudo-no-pulso/",
+   "fonte": "Olhar Digital",
+   "categoria": "Tecnologia",
+   "data": "2026-10-14T19:40:00.000Z"
+  },
+  {
+   "titulo": "Como escanear o QR code do WhatsApp Web para entrar na sua conta",
+   "link": "https://tecnoblog.net/responde/whatsapp-web-escanear-codigo-qr/",
+   "fonte": "Tecnoblog",
+   "categoria": "Tecnologia",
+   "data": "2026-10-14T19:32:38.000Z"
+  },
+  {
+   "titulo": "Corte amplo de gastos públicos afetaria área social, dizem economistas",
+   "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-10/corte-amplo-de-gastos-publicos-afetaria-area-social-dizem-economistas",
+   "fonte": "Agência Brasil",
+   "categoria": "Geral",
+   "data": "2026-10-14T19:20:00.000Z"
+  },
+  {
+   "titulo": "Biblioteca Xbox em promoção: confira uma seleção de jogos para aproveitar agora",
+   "link": "https://olhardigital.com.br/2026/10/14/reviews/biblioteca-xbox-em-promocao-confira-uma-selecao-de-jogos-para-aproveitar-agora/",
+   "fonte": "Olhar Digital",
+   "categoria": "Tecnologia",
+   "data": "2026-10-14T19:20:00.000Z"
+  },
+  {
+   "titulo": "Notebook Acer Aspire 5 com RAM de 16 GB cai 45% em até 12x sem juros",
+   "link": "https://tecnoblog.net/achados/notebook-acer-aspire-5-com-ram-de-16-gb-cai-45-em-ate-12x-sem-juros/",
+   "fonte": "Tecnoblog",
+   "categoria": "Tecnologia",
+   "data": "2026-10-14T19:14:12.000Z"
+  },
+  {
+   "titulo": "Minerais críticos e estratégicos concentram 57% dos empregos da mineração em 2025, diz ANM",
+   "link": "https://g1.globo.com/economia/noticia/2026/10/14/minerais-criticos-e-estrategicos-concentram-57percent-dos-empregos-da-mineracao-em-2025-diz-anm.ghtml",
+   "fonte": "g1 Economia",
+   "categoria": "Economia",
+   "data": "2026-10-14T19:00:00.000Z"
+  },
+  {
+   "titulo": "Confiança da indústria sobe em outubro, mas setor segue pessimista",
+   "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-10/confianca-da-industria-sobe-em-outubro-mas-setor-segue-pessimista",
+   "fonte": "Agência Brasil",
+   "categoria": "Geral",
+   "data": "2026-10-14T18:59:00.000Z"
+  },
+  {
+   "titulo": "Governo federal regulamenta Marco Legal dos Jogos Eletrônicos",
+   "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-10/governo-federal-regulamenta-marco-legal-dos-jogos-eletronicos",
+   "fonte": "Agência Brasil",
+   "categoria": "Geral",
+   "data": "2026-10-14T18:32:00.000Z"
+  },
+  {
+   "titulo": "México vai exigir que plataformas digitais protejam menores de conteúdos violentos e sexuais",
+   "link": "https://g1.globo.com/tecnologia/noticia/2026/10/14/mexico-plataformas-conteudos.ghtml",
+   "fonte": "g1 Economia",
+   "categoria": "Economia",
+   "data": "2026-10-14T18:13:00.000Z"
+  },
+  {
+   "titulo": "Meta AI barra Lula, mas gera imagens com referência a Flávio",
+   "link": "https://tecnoblog.net/noticias/meta-ai-barra-lula-mas-gera-imagens-com-referencia-a-flavio/",
+   "fonte": "Tecnoblog",
+   "categoria": "Tecnologia",
+   "data": "2026-10-14T17:55:16.000Z"
+  },
+  {
+   "titulo": "Xbox anuncia o controle compacto que nós revelamos em primeira mão",
+   "link": "https://tecnoblog.net/noticias/xbox-anuncia-o-controle-compacto-que-nos-revelamos-em-primeira-mao/",
+   "fonte": "Tecnoblog",
+   "categoria": "Tecnologia",
+   "data": "2026-10-14T17:47:56.000Z"
+  },
+  {
+   "titulo": "'Rouanet Games': governo anuncia R$ 200 milhões para desenvolver games no Brasil",
+   "link": "https://g1.globo.com/tecnologia/noticia/2026/10/14/governo-lula-anuncia-r-200-milhoes-para-desenvolver-games-no-brasil.ghtml",
+   "fonte": "g1 Economia",
+   "categoria": "Economia",
+   "data": "2026-10-14T17:26:31.000Z"
+  },
+  {
+   "titulo": "Lula diz que para se fazer uma política pública é difícil, mas, para destruir, basta um passo: 'Tem maluco pra tudo'",
+   "link": "https://g1.globo.com/politica/eleicoes/2026/noticia/2026/10/14/lula-diz-que-na-politica-tem-maluco-pra-tudo-e-que-para-fazer-um-programa-e-dificil-mas-para-destruir-e-um-passo.ghtml",
+   "fonte": "g1 Economia",
+   "categoria": "Economia",
+   "data": "2026-10-14T16:51:28.000Z"
+  }
+ ]
+}
