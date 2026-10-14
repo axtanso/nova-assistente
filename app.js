@@ -1,4 +1,4 @@
-/* Nova — assistente pessoal (versão independente, Gemini grátis) */
+/* Vega — assistente pessoal (versão independente, Gemini grátis) */
 (function () {
 "use strict";
 const $ = s => document.querySelector(s);
@@ -6,7 +6,7 @@ const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString
 const KEY = "nova-v1";
 const DEF = {
   tasks: [], memory: [], chat: [], brief: null,
-  settings: { name: "Nova", user: "Luís Fernando", city: "", speak: true, loop: false, voice: "", rate: 1.05, engine: "gemini", character: "natural", ttsVoice: "Puck", ttsStyle: "", ttsModel: "gemini-3.8-flash-tts", wakePhrase: "Fala comigo N.O.V.A",
+  settings: { name: "Vega", user: "Luís Fernando", city: "", speak: true, loop: false, voice: "", rate: 1.05, engine: "gemini", character: "natural", ttsVoice: "Puck", ttsStyle: "", ttsModel: "gemini-3.8-flash-tts", wakePhrase: "Vega",
               apiKey: "", model: "gemini-flash-latest", notif: false, wake: false }
 };
 let S = load();
@@ -22,7 +22,13 @@ function merge(d) {
   }
   return o;
 }
-function load() { try { return merge(JSON.parse(localStorage.getItem(KEY) || "null")); } catch (e) { return structuredClone(DEF); } }
+function load() {
+  let st; try { st = merge(JSON.parse(localStorage.getItem(KEY) || "null")); } catch (e) { st = structuredClone(DEF); }
+  // Renomeação Nova → Vega: atualiza quem ainda usa os valores antigos
+  if (st.settings.name === "Nova") st.settings.name = "Vega";
+  if (!st.settings.wakePhrase || /n\.?\s*o\.?\s*v\.?\s*a/i.test(st.settings.wakePhrase)) st.settings.wakePhrase = "Vega";
+  return st;
+}
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast("Não consegui salvar neste navegador.", true); } }
 
 /* ---------- utilidades ---------- */
@@ -110,7 +116,7 @@ async function loadNews() {
 /* ---------- render ---------- */
 function render() { renderTop(); renderBrief(); renderTasks(); renderMem(); renderChat(); }
 function renderTop() {
-  $("#brandName").textContent = S.settings.name || "Nova"; document.title = S.settings.name || "Nova";
+  $("#brandName").textContent = S.settings.name || "Vega"; document.title = S.settings.name || "Vega";
   $("#voiceBtn").innerHTML = S.settings.speak
     ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 5 6 9H3v6h3l5 4zM15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>'
     : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 5 6 9H3v6h3l5 4zM22 9l-6 6M16 9l6 6"/></svg>';
@@ -218,7 +224,7 @@ let speaking = false;
 /* ---------- voz IA (Gemini TTS, grátis com a mesma chave) ---------- */
 // Personagens originais. Nenhum imita pessoa ou personagem real.
 const CHARACTERS = {
-  natural:   { nome: "Nova (natural)",            voz: "Aoede",   estilo: "natural, simpática e calorosa, como uma amiga conversando" },
+  natural:   { nome: "Vega (natural)",            voz: "Aoede",   estilo: "natural, simpática e calorosa, como uma amiga conversando" },
   desenho:   { nome: "Narrador de desenho clássico", voz: "Fenrir", estilo: "como o narrador empolgado de um desenho animado clássico dos anos 80: teatral, exagerado, cheio de energia e bom humor" },
   heroi:     { nome: "Herói de desenho",           voz: "Alnilam", estilo: "como um herói confiante de desenho animado antigo: voz firme, épica e corajosa, sempre otimista" },
   vilao:     { nome: "Vilão trapalhão",            voz: "Algenib", estilo: "como um vilão trapalhão de desenho animado: rouco, dramático e engraçado, que se acha muito esperto" },
@@ -344,51 +350,95 @@ function listen() {
   try { rec.start(); } catch (e) { toast("Não consegui abrir o microfone.", true); }
 }
 
-/* ---------- frase de ativação (ex.: "Fala comigo N.O.V.A") ---------- */
+/* ---------- palavra de ativação (ex.: "Vega") ---------- */
 let wakeRec = null, wakeOn = false, awaiting = false, wakeTimer = null;
 const LETTER_NAMES = { a: "a", be: "b", "bê": "b", ce: "c", "cê": "c", de: "d", "dê": "d", e: "e", "é": "e", "ê": "e", efe: "f", ge: "g", "gê": "g", aga: "h", i: "i", jota: "j", ca: "k", "cá": "k", ele: "l", eme: "m", ene: "n", o: "o", "ó": "o", "ô": "o", pe: "p", "pê": "p", que: "q", "quê": "q", erre: "r", esse: "s", te: "t", "tê": "t", u: "u", ve: "v", "vê": "v", dabliu: "w", xis: "x", ipsilon: "y", ze: "z", "zê": "z" };
-// Quebra a fala em palavras normalizadas, juntando letras soletradas ("n o v a" ou "ene ó vê a" vira "nova")
+// Quebra a fala em palavras normalizadas, juntando letras soletradas ("v e g a" ou "vê é gê a" vira "vega")
 function wakeTokens(text) {
-  const raw = String(text).toLowerCase().replace(/[.\-_]/g, " ").split(/\s+/).filter(Boolean);
+  const raw = String(text).replace(/[.\-_]/g, " ").split(/\s+/).filter(Boolean);
   const out = []; let run = [];
   const flush = () => { if (run.length >= 3) out.push({ t: run.map(r => r.l).join(""), from: run[0].i, to: run[run.length - 1].i }); else run.forEach(r => out.push({ t: norm(r.w).replace(/[^a-z0-9]/g, ""), from: r.i, to: r.i })); run = []; };
-  raw.forEach((w, i) => { const c = w.replace(/[^\p{L}\p{N}]/gu, ""); const l = c.length === 1 ? norm(c) : LETTER_NAMES[c]; if (l) run.push({ l, w: c, i }); else { flush(); out.push({ t: norm(c).replace(/[^a-z0-9]/g, ""), from: i, to: i }); } });
+  raw.forEach((w, i) => { const c = w.replace(/[^\p{L}\p{N}]/gu, "").toLowerCase(); const l = c.length === 1 ? norm(c) : LETTER_NAMES[c]; if (l) run.push({ l, w: c, i }); else { flush(); out.push({ t: norm(c).replace(/[^a-z0-9]/g, ""), from: i, to: i }); } });
   flush(); return { tokens: out.filter(x => x.t), words: raw };
 }
 const near = (a, b) => a === b || (a.length >= 4 && b.length >= 4 && (a.startsWith(b) || b.startsWith(a)));
 // Procura a frase na fala; aceita a frase completa ou só o final dela ("comigo nova")
 function matchWake(text) {
-  const phrase = wakeTokens(S.settings.wakePhrase || S.settings.name || "Nova").tokens.map(x => x.t);
+  const phrase = wakeTokens(S.settings.wakePhrase || S.settings.name || "Vega").tokens.map(x => x.t);
   const { tokens, words } = wakeTokens(text); if (!phrase.length) return null;
   const tries = phrase.length > 2 ? [phrase, phrase.slice(-2)] : [phrase];
+  const eq = ph1 => (t, p) => ph1 ? (t === p || t === p + "s") : near(t, p); // uma palavra só: precisa ser exata
   for (const ph of tries) for (let i = 0; i + ph.length <= tokens.length; i++) {
-    if (ph.every((p, j) => near(tokens[i + j].t, p))) return { rest: words.slice(tokens[i + ph.length - 1].to + 1).join(" ").replace(/^[\s,.!?]+/, "") };
+    if (ph.every((p, j) => eq(ph.length === 1)(tokens[i + j].t, p))) return { rest: words.slice(tokens[i + ph.length - 1].to + 1).join(" ").replace(/^[\s,.!?]+/, "") };
   }
   return null;
 }
+let wakeStarts = [], heardT = null;
+function showHeard(t) {
+  const el = $("#heard"); if (!el) return;
+  el.textContent = t ? "Ouvi: " + t : ""; clearTimeout(heardT); if (t) heardT = setTimeout(() => el.textContent = "", 6000);
+}
+function wakeIdle() { return S.settings.wake && !wakeOn && !busy && !speaking && !listening; }
 function startWake() {
   if (!SR) { toast("A escuta contínua precisa do Edge ou do Chrome.", true); S.settings.wake = false; save(); renderTop(); return; }
   if (wakeOn || busy || speaking || listening) return;
-  wakeRec = new SR(); wakeRec.lang = "pt-BR"; wakeRec.continuous = true; wakeRec.interimResults = false;
-  wakeRec.onresult = e => {
-    const r = e.results[e.results.length - 1]; if (!r.isFinal) return;
-    const said = r[0].transcript.trim();
-    if (awaiting) { awaiting = false; clearTimeout(wakeTimer); if (said.length > 1) { stopWake(); send(said); } return; }
-    const m = matchWake(said);
-    if (m) {
-      if (m.rest.length > 3) { stopWake(); beep(); send(m.rest); }
-      else { awaiting = true; setMode("listening", "Pode falar"); beep(true); clearTimeout(wakeTimer); wakeTimer = setTimeout(() => { awaiting = false; setMode("idle"); }, 9000); }
+  // Proteção contra reinício em loop (ex.: sem internet): 5 quedas em 2 s dão uma pausa curta
+  const now = Date.now(); wakeStarts = wakeStarts.filter(t => now - t < 2000); wakeStarts.push(now);
+  if (wakeStarts.length > 5) { setTimeout(() => { wakeStarts = []; if (wakeIdle()) startWake(); }, 4000); return; }
+  const r0 = new SR(); wakeRec = r0;
+  r0.lang = "pt-BR"; r0.continuous = true; r0.interimResults = true; r0.maxAlternatives = 3;
+  let armed = false;
+  r0.onresult = e => {
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const r = e.results[i]; const alts = Array.from({ length: r.length }, (_, k) => (r[k].transcript || "").trim()).filter(Boolean);
+      if (!alts.length) continue;
+      if (r.isFinal) showHeard(alts[0]);
+      if (awaiting) {
+        if (r.isFinal) { awaiting = false; clearTimeout(wakeTimer); const m = matchWake(alts[0]); const cmd = m ? m.rest : alts[0];
+          if (cmd.length > 1) { stopWake(); send(cmd); } else { awaiting = true; } }
+        continue;
+      }
+      let m = null; for (const a of alts) { m = matchWake(a); if (m) break; }
+      if (!m) continue;
+      if (!r.isFinal) { if (!armed) { armed = true; beep(true); setMode("listening", "Pode falar"); } continue; }
+      armed = false;
+      if (m.rest.length > 3) { stopWake(); send(m.rest); }
+      else { awaiting = true; setMode("listening", "Pode falar"); clearTimeout(wakeTimer); wakeTimer = setTimeout(() => { awaiting = false; setMode("idle"); }, 9000); }
     }
   };
-  wakeRec.onerror = e => { if (e.error === "not-allowed" || e.error === "service-not-allowed") { micError(e.error); S.settings.wake = false; save(); renderTop(); } };
-  wakeRec.onend = () => { wakeOn = false; if (S.settings.wake && !busy && !speaking && !listening) setTimeout(startWake, 400); };
-  try { wakeRec.start(); wakeOn = true; setMode("idle"); } catch (e) { wakeOn = false; }
+  r0.onerror = e => { if (e.error === "not-allowed" || e.error === "service-not-allowed") { micError(e.error); S.settings.wake = false; save(); renderTop(); stopVad(); } };
+  // Religa na hora, sem timer (timers ficam lentos com a janela minimizada)
+  r0.onend = () => { if (wakeRec === r0) { wakeRec = null; wakeOn = false; } if (wakeIdle()) startWake(); };
+  try { r0.start(); wakeOn = true; setMode("idle"); startVad(); } catch (err) { wakeOn = false; wakeRec = null; }
 }
-// Vigia: se o navegador derrubar a escuta (rede, suspensão), religa sozinha
-setInterval(() => { if (S.settings.wake && !wakeOn && !busy && !speaking && !listening) startWake(); }, 15000);
-function stopWake() { if (wakeRec) { const r = wakeRec; wakeRec = null; r.onend = () => { wakeOn = false; }; try { r.abort(); } catch (e) {} } wakeOn = false; }
+// Vigia de voz: roda na thread de áudio, que o navegador não desacelera em segundo plano.
+// Quando percebe alguém falando e a escuta caiu, religa na hora.
+let vad = null;
+const VAD_CODE = `class Vad extends AudioWorkletProcessor{constructor(){super();this.t=0}process(i){const c=i[0]&&i[0][0];if(c){let s=0;for(let k=0;k<c.length;k++)s+=c[k]*c[k];const rms=Math.sqrt(s/c.length);if(rms>0.015&&currentTime-this.t>0.7){this.t=currentTime;this.port.postMessage(rms)}}return true}}registerProcessor("vad",Vad);`;
+async function startVad() {
+  if (vad || !navigator.mediaDevices?.getUserMedia || !window.AudioWorkletNode) return;
+  vad = { starting: true };
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const url = URL.createObjectURL(new Blob([VAD_CODE], { type: "text/javascript" }));
+    await ctx.audioWorklet.addModule(url); URL.revokeObjectURL(url);
+    const src = ctx.createMediaStreamSource(stream), node = new AudioWorkletNode(ctx, "vad"), mute = ctx.createGain(); mute.gain.value = 0;
+    src.connect(node).connect(mute).connect(ctx.destination);
+    node.port.onmessage = () => { if (wakeIdle()) startWake(); };
+    vad = { stream, ctx };
+    if (ctx.state === "suspended") document.addEventListener("pointerdown", () => ctx.resume(), { once: true });
+    if (!S.settings.wake) stopVad();
+  } catch (e) { vad = null; }
+}
+function stopVad() { if (vad && vad.ctx) { vad.stream.getTracks().forEach(t => t.stop()); vad.ctx.close(); } vad = null; }
+// Reserva: confere de tempos em tempos e ao voltar para a janela
+setInterval(() => { if (wakeIdle()) startWake(); }, 10000);
+document.addEventListener("visibilitychange", () => { if (wakeIdle()) startWake(); });
+window.addEventListener("focus", () => { if (wakeIdle()) startWake(); });
+function stopWake() { if (wakeRec) { const r = wakeRec; wakeRec = null; r.onend = null; r.onresult = null; try { r.abort(); } catch (e) {} } wakeOn = false; }
 function pauseWake() { if (wakeOn) stopWake(); }
-function resumeWake() { if (S.settings.wake) setTimeout(startWake, 300); }
+function resumeWake() { if (wakeIdle()) startWake(); } // direto, sem timer
 let actx;
 function beep(two) {
   try { actx = actx || new (window.AudioContext || window.webkitAudioContext)();
@@ -550,8 +600,8 @@ function exportData() {
   const data = { ...S, settings: { ...S.settings, apiKey: "" }, exportado: new Date().toISOString() };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
-  a.download = "nova-backup-" + new Date().toISOString().slice(0, 10) + ".json"; document.body.append(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 2000); toast("Backup salvo. Abra a Nova no outro aparelho e use Importar.");
+  a.download = "vega-backup-" + new Date().toISOString().slice(0, 10) + ".json"; document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000); toast("Backup salvo. Abra a Vega no outro aparelho e use Importar.");
 }
 function importData(file) {
   const fr = new FileReader();
@@ -563,7 +613,7 @@ function importData(file) {
       const mids = new Set(S.memory.map(m => m.id)); d.memory.forEach(m => { if (!mids.has(m.id)) S.memory.push(m); });
       S.settings = { ...d.settings, apiKey: key || d.settings.apiKey };
       save(); render(); loadWeather(); toast("Dados importados e combinados.", false, () => { S = old; save(); render(); });
-    } catch (e) { toast("Arquivo inválido. Use um backup exportado pela Nova.", true); }
+    } catch (e) { toast("Arquivo inválido. Use um backup exportado pela Vega.", true); }
   };
   fr.readAsText(file);
 }
@@ -586,7 +636,7 @@ $("#briefBtn").onclick = briefing;
 $("#voiceBtn").onclick = () => { S.settings.speak = !S.settings.speak; if (!S.settings.speak) stopSpeech(); save(); renderTop(); toast(S.settings.speak ? "Voz ligada" : "Voz desligada"); };
 $("#wakeBtn").onclick = () => {
   S.settings.wake = !S.settings.wake; save(); renderTop();
-  if (S.settings.wake) { startWake(); toast(`Escuta ligada. Diga "${S.settings.wakePhrase || S.settings.name}" e o seu pedido.`); } else { stopWake(); awaiting = false; setMode("idle"); toast("Escuta desligada"); }
+  if (S.settings.wake) { startWake(); toast(`Escuta ligada. Diga "${S.settings.wakePhrase || S.settings.name}" e o seu pedido.`); } else { stopWake(); stopVad(); awaiting = false; setMode("idle"); showHeard(""); toast("Escuta desligada"); }
 };
 $("#taskWhen").addEventListener("change", e => e.target.classList.toggle("has", !!e.target.value));
 $("#taskForm").addEventListener("submit", e => {
@@ -629,9 +679,9 @@ $("#setBtn").onclick = () => {
 };
 async function closeSet() {
   const s = S.settings, oldCity = s.city, oldName = s.name;
-  s.name = $("#sName").value.trim() || "Nova"; s.user = $("#sUser").value.trim() || "você"; s.city = $("#sCity").value.trim();
+  s.name = $("#sName").value.trim() || "Vega"; s.user = $("#sUser").value.trim() || "você"; s.city = $("#sCity").value.trim();
   s.speak = $("#sSpeak").checked; s.loop = $("#sLoop").checked; s.voice = $("#sVoice").value; s.rate = +$("#sRate").value || 1;
-  s.engine = $("#sEngine").value; s.character = $("#sChar").value; s.ttsVoice = $("#sTtsVoice").value; s.ttsStyle = $("#sTtsStyle").value.trim().slice(0, 300); s.wakePhrase = $("#sWake").value.trim().slice(0, 60) || "Fala comigo N.O.V.A";
+  s.engine = $("#sEngine").value; s.character = $("#sChar").value; s.ttsVoice = $("#sTtsVoice").value; s.ttsStyle = $("#sTtsStyle").value.trim().slice(0, 300); s.wakePhrase = $("#sWake").value.trim().slice(0, 60) || "Vega";
   s.apiKey = $("#sKey").value.trim(); s.model = $("#sModel").value.trim() || "gemini-flash-latest";
   const wantNotif = $("#sNotif").checked;
   if (wantNotif && "Notification" in window && Notification.permission !== "granted") { const p = await Notification.requestPermission(); s.notif = p === "granted"; if (!s.notif) toast("Notificações bloqueadas pelo navegador.", true); }

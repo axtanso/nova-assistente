@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Nova</title>
-<meta name="description" content="Nova, assistente pessoal por voz com briefing do dia, clima, notícias, tarefas, lembretes e memória.">
+<title>Vega</title>
+<meta name="description" content="Vega, assistente pessoal por voz com briefing do dia, clima, notícias, tarefas, lembretes e memória.">
 <meta name="theme-color" content="#060c17">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Nova">
+<meta name="apple-mobile-web-app-title" content="Vega">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -110,6 +110,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:10px
 .orb i:nth-child(2){inset:10px;border-style:dashed;opacity:.55;animation:spin 18s linear infinite}
 .orb i:nth-child(3){inset:24px;background:radial-gradient(circle,rgba(83,210,255,.55),rgba(83,210,255,.08) 70%);border:0;opacity:1;animation:pulse 3.2s ease-in-out infinite}
 .state{font:500 11px var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.heard{font:400 12px var(--f-mono);color:var(--muted);min-height:16px;max-width:100%;text-align:center;overflow-wrap:anywhere;opacity:.85}
 [data-mode=thinking] .orb i:nth-child(2){animation-duration:2.2s}
 [data-mode=thinking] .orb i:nth-child(3){animation-duration:1s}
 [data-mode=speaking] .orb i:nth-child(3){animation:pulse .6s ease-in-out infinite}
@@ -182,7 +183,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:10px
 <body>
 <div class="app" id="app" data-mode="idle">
   <header class="top">
-    <div class="brand"><span id="brandName">Nova</span><small>Assistente pessoal</small></div>
+    <div class="brand"><span id="brandName">Vega</span><small>Assistente pessoal</small></div>
     <div class="spacer"></div>
     <div class="clock"><div id="clk">--:--</div><div class="d" id="clkd"></div></div>
     <button class="iconbtn" id="wakeBtn" aria-label="Escuta pela palavra de ativação" title="Escuta pela palavra de ativação"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12h2M6 8v8M10 5v14M14 8v8M18 10v4M22 12h0"/></svg></button>
@@ -222,7 +223,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:10px
 
     <section class="col c-chat">
       <div class="panel chat">
-        <div class="core"><div class="orb" aria-hidden="true"><i></i><i></i><i></i></div><div class="state" id="stateTxt">Pronta</div></div>
+        <div class="core"><div class="orb" aria-hidden="true"><i></i><i></i><i></i></div><div class="state" id="stateTxt">Pronta</div><div class="heard" id="heard" aria-live="polite"></div></div>
         <div class="msgs" id="msgs" aria-live="polite"></div>
         <div class="chips" id="chips"></div>
         <form class="composer" id="form">
@@ -257,7 +258,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:10px
 <div class="sheet" id="setup" hidden>
   <div class="panel" role="dialog" aria-label="Primeira configuração">
     <div class="ph"><h2>Conectar a IA</h2></div>
-    <p style="margin-top:0">A Nova usa o Gemini do Google, no plano gratuito. Leva 1 minuto:</p>
+    <p style="margin-top:0">A Vega usa o Gemini do Google, no plano gratuito. Leva 1 minuto:</p>
     <ol class="steps">
       <li>Abra o <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> e entre com sua conta Google.</li>
       <li>Toque em <strong>Create API key</strong> e copie a chave.</li>
@@ -275,7 +276,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:10px
   <div class="panel" role="dialog" aria-label="Ajustes">
     <div class="ph"><h2>Ajustes</h2><button class="iconbtn" id="closeSet" aria-label="Fechar">✕</button></div>
     <div class="field"><label for="sName">Nome da assistente</label><input id="sName" maxlength="24"></div>
-    <div class="field"><label for="sWake">Frase de ativação</label><input id="sWake" maxlength="60" placeholder="Fala comigo N.O.V.A"><small>Ligue a escuta no ícone de ondas sonoras, no topo. Diga a frase e o pedido juntos ou espere o bipe.</small></div>
+    <div class="field"><label for="sWake">Palavra de ativação</label><input id="sWake" maxlength="60" placeholder="Vega"><small>Ligue a escuta no ícone de ondas sonoras, no topo. Diga a palavra e o pedido juntos ("Vega, que horas são?") ou espere o bipe.</small></div>
     <div class="field"><label for="sUser">Como devo te chamar</label><input id="sUser" maxlength="40"></div>
     <div class="field"><label for="sCity">Cidade do clima</label><input id="sCity" maxlength="60"></div>
     <div class="toggle"><label for="sSpeak">Ler respostas em voz alta</label><input type="checkbox" id="sSpeak"></div>
@@ -288,7 +289,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:10px
         <div class="field"><label for="sTtsVoice">Timbre</label><select id="sTtsVoice"></select></div>
         <div class="field"><label for="sTtsStyle">Como ela deve falar</label><input id="sTtsStyle" maxlength="300" placeholder="Ex.: como um pirata animado de desenho antigo"></div>
       </div>
-      <p class="hint" style="margin-top:0">Se a voz IA estiver indisponível ou no limite gratuito, a Nova usa a voz do navegador.</p>
+      <p class="hint" style="margin-top:0">Se a voz IA estiver indisponível ou no limite gratuito, a Vega usa a voz do navegador.</p>
     </div>
     <div id="browserVoiceBox">
       <div class="field"><label for="sVoice">Voz do navegador</label><select id="sVoice"></select></div>

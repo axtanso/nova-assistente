@@ -1,4 +1,4 @@
-// Lê feeds RSS de fontes jornalísticas reais e gera news.json para a Nova.
+// Lê feeds RSS de fontes jornalísticas reais e gera news.json para a Vega.
 // Roda no GitHub Actions (Node 20+), sem dependências.
 import { writeFile, readFile } from "node:fs/promises";
 
@@ -30,7 +30,7 @@ async function main() {
   const all = [];
   for (const f of FEEDS) {
     try {
-      const r = await fetch(f.url, { headers: { "User-Agent": "Mozilla/5.0 (Nova assistente; RSS)" }, signal: AbortSignal.timeout(15000) });
+      const r = await fetch(f.url, { headers: { "User-Agent": "Mozilla/5.0 (Vega assistente; RSS)" }, signal: AbortSignal.timeout(15000) });
       if (!r.ok) throw new Error("HTTP " + r.status);
       const items = parse(await r.text(), f.fonte, f.categoria);
       console.log(`${f.fonte}: ${items.length} itens`);
