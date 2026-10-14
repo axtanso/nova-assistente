@@ -188,13 +188,30 @@ function renderChat() {
 
 /* ---------- voz: fala ---------- */
 let voices = [];
+// Nota de qualidade: vozes neurais (Edge "Natural", Google) soam humanas; as antigas do sistema soam robóticas
+function voiceScore(v) {
+  const lang = (v.lang || "").replace("_", "-").toLowerCase(); let s = 0;
+  if (lang === "pt-br") s += 50; else if (lang.startsWith("pt")) s += 10;
+  if (/natural|neural|online|enhanced|premium|aprimorad/i.test(v.name)) s += 30;
+  if (/google/i.test(v.name)) s += 20;
+  if (/francisca|thalita|antonio|luciana|felipe/i.test(v.name)) s += 5;
+  if (/maria|daniel|helena/i.test(v.name) && !/natural|online/i.test(v.name)) s -= 5; // vozes antigas do Windows
+  if (!v.localService) s += 2;
+  return s;
+}
 function loadVoices() {
   if (!("speechSynthesis" in window)) return;
-  voices = speechSynthesis.getVoices().filter(v => /^pt/i.test(v.lang));
+  voices = speechSynthesis.getVoices().filter(v => /^pt/i.test(v.lang)).sort((a, b) => voiceScore(b) - voiceScore(a));
   const sel = $("#sVoice");
-  sel.innerHTML = '<option value="">Automática (português)</option>' + voices.map(v => `<option value="${esc(v.name)}">${esc(v.name)} · ${esc(v.lang)}</option>`).join("");
-  sel.value = S.settings.voice || "";
+  sel.innerHTML = '<option value="">Automática (a mais natural em português)</option>' +
+    voices.map((v, i) => `<option value="${esc(v.name)}">${esc(v.name.replace(/^Microsoft\s+/, "").replace(/\s*-\s*Portuguese \(Brazil\)/i, ""))} · ${esc(v.lang)}${i === 0 ? " · recomendada" : ""}</option>`).join("");
+  sel.value = voices.some(v => v.name === S.settings.voice) ? S.settings.voice : "";
 }
+function pickVoice() {
+  if (!voices.length) loadVoices(); // a lista de vozes chega depois do carregamento em alguns navegadores
+  return voices.find(x => x.name === S.settings.voice) || voices[0] || null;
+}
+let warnedVoice = false;
 if ("speechSynthesis" in window) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
 let speaking = false;
 function speak(text, force) {
@@ -204,10 +221,14 @@ function speak(text, force) {
   for (const c of chunks) { if ((cur + c).length > 200) { if (cur) parts.push(cur); cur = c; } else cur += c; }
   if (cur.trim()) parts.push(cur);
   if (!parts.length) { afterSpeak(); return; }
-  const v = voices.find(x => x.name === S.settings.voice) || voices.find(x => x.lang === "pt-BR") || voices[0];
+  const v = pickVoice();
+  if (!v) {
+    if (!warnedVoice) { warnedVoice = true; toast("Este navegador não tem voz em português. Use o Microsoft Edge (vozes naturais) ou o Chrome.", true); }
+    afterSpeak(); return; // melhor ficar em silêncio do que falar português com sotaque inglês
+  }
   speaking = true; setMode("speaking");
   parts.forEach((p, i) => {
-    const u = new SpeechSynthesisUtterance(p); u.lang = "pt-BR"; if (v) u.voice = v; u.rate = +S.settings.rate || 1;
+    const u = new SpeechSynthesisUtterance(p); u.voice = v; u.lang = v.lang; u.rate = +S.settings.rate || 1; u.pitch = 1;
     if (i === parts.length - 1) { u.onend = () => { speaking = false; setMode("idle"); afterSpeak(); }; u.onerror = () => { speaking = false; setMode("idle"); afterSpeak(); }; }
     speechSynthesis.speak(u);
   });
