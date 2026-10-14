@@ -307,20 +307,33 @@ const TOOLS = [
   { name: "apagar_memoria", description: "Apaga uma memória pelo id quando o usuário pedir para esquecer.", parameters: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
     run(i) { const k = S.memory.findIndex(x => x.id === String(i.id)); if (k < 0) throw new Error("não encontrada"); const [m] = S.memory.splice(k, 1); save(); render(); toast("Memória apagada", false, () => { S.memory.splice(k, 0, m); save(); render(); }); return { ok: true }; } }
 ];
+const FALLBACK_MODELS = ["gemini-flash-lite-latest", "gemini-2.5-flash-lite"];
 class AIError extends Error { constructor(msg, code) { super(msg); this.code = code; } }
 async function gemini(contents, { system, tools, signal }) {
   const key = (S.settings.apiKey || "").trim();
   if (!key) throw new AIError("Configure a chave do Gemini nos ajustes.", "nokey");
   if (!navigator.onLine) throw new AIError("Sem internet no momento.", "offline");
-  const model = (S.settings.model || "gemini-flash-latest").trim();
+  const main = (S.settings.model || "gemini-flash-latest").trim();
   const body = { systemInstruction: { parts: [{ text: system }] }, contents, generationConfig: { temperature: 0.7 } };
   if (tools) body.tools = [{ functionDeclarations: TOOLS.map(({ name, description, parameters }) => ({ name, description, parameters })) }];
-  let r;
-  try {
-    r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
-      { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": key }, body: JSON.stringify(body), signal });
-  } catch (e) { if (e.name === "AbortError") throw new AIError("", "cancelled"); throw new AIError("Falha de conexão com o Gemini.", "net"); }
+  // Servidor sobrecarregado (500/503): tenta de novo e depois cai para modelos reserva
+  const plan = [main, main, ...FALLBACK_MODELS.filter(m => m !== main)];
+  let r, model;
+  for (let i = 0; i < plan.length; i++) {
+    model = plan[i];
+    if (i > 0) { setMode("thinking", i === 1 ? "Tentando de novo" : "Usando modelo reserva"); await new Promise(res => setTimeout(res, i === 1 ? 1500 : 500)); }
+    try {
+      r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+        { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": key }, body: JSON.stringify(body), signal });
+    } catch (e) { if (e.name === "AbortError") throw new AIError("", "cancelled"); throw new AIError("Falha de conexão com o Gemini.", "net"); }
+    if (r.ok) break;
+    const busy = r.status === 503 || r.status === 500;
+    if (r.status === 429) { while (i + 1 < plan.length && plan[i + 1] === model) i++; continue; } // limite do modelo: pula para outro
+    if (busy || (r.status === 404 && i >= 2)) continue;
+    break;
+  }
   if (!r.ok) {
+    if (r.status === 503 || r.status === 500) throw new AIError("Os servidores do Gemini estão sobrecarregados agora. Tente de novo em alguns minutos.", "busy");
     let msg = ""; try { msg = (await r.json()).error.message || ""; } catch (e) {}
     if (r.status === 429) throw new AIError("Limite gratuito do Gemini atingido. Espere um minuto ou tente amanhã.", "rate");
     if (r.status === 400 && /API key/i.test(msg)) throw new AIError("Chave do Gemini inválida. Confira nos ajustes.", "key");
