@@ -123,6 +123,7 @@ function renderTop() {
   $("#voiceBtn").setAttribute("aria-pressed", S.settings.speak);
   $("#wakeBtn").classList.toggle("on", !!S.settings.wake); $("#wakeBtn").setAttribute("aria-pressed", !!S.settings.wake);
   $("#netTag").textContent = navigator.onLine ? "" : "sem internet";
+  if (typeof renderSys === "function") try { renderSys(); } catch (e) {}
 }
 const greeting = () => { const h = new Date().getHours(); return h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite"; };
 function renderBrief() {
@@ -702,6 +703,77 @@ function tick() { const d = new Date(); $("#clk").textContent = d.toLocaleTimeSt
 setInterval(tick, 15000); tick();
 setInterval(checkDue, 30000);
 setInterval(() => { loadWeather(); loadNews(); }, 30 * 60000);
+
+
+/* ---------- visual HUD: céu estrelado, esfera de partículas e painel de sistema ---------- */
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function drawStars() {
+  const c = $("#stars"); if (!c) return; const dpr = Math.min(devicePixelRatio || 1, 2);
+  const w = innerWidth, h = innerHeight; c.width = w * dpr; c.height = h * dpr; const g = c.getContext("2d"); g.scale(dpr, dpr);
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647; // fixo: o céu não muda a cada recarga
+  for (let i = 0; i < Math.round(w * h / 2600); i++) {
+    const x = rnd() * w, y = rnd() * h, r = rnd() < .92 ? rnd() * .9 + .2 : rnd() * 1.4 + .8, a = .25 + rnd() * .6;
+    g.fillStyle = rnd() < .15 ? `rgba(255,214,170,${a})` : `rgba(220,245,235,${a})`; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();
+    if (r > 1.6) { const gr = g.createRadialGradient(x, y, 0, x, y, r * 6); gr.addColorStop(0, "rgba(220,245,235,.35)"); gr.addColorStop(1, "rgba(220,245,235,0)"); g.fillStyle = gr; g.beginPath(); g.arc(x, y, r * 6, 0, 7); g.fill(); }
+  }
+}
+let starT; addEventListener("resize", () => { clearTimeout(starT); starT = setTimeout(drawStars, 200); }); drawStars();
+
+const orb = (() => {
+  const c = $("#orb"); if (!c) return null; const g = c.getContext("2d");
+  const N = 520, pts = [], rays = [];
+  for (let i = 0; i < N; i++) { const y = 1 - (i / (N - 1)) * 2, r = Math.sqrt(1 - y * y), t = i * 2.399963; pts.push([Math.cos(t) * r, y, Math.sin(t) * r, .6 + Math.random() * .8]); }
+  for (let i = 0; i < 90; i++) rays.push([Math.random() * Math.PI * 2, .55 + Math.random() * .5, Math.random()]);
+  let rot = 0, energy = .3, size = 0, last = performance.now();
+  function frame(now) {
+    const dt = Math.min(64, now - last) / 1000; last = now;
+    const box = c.clientWidth; if (box !== size) { size = box; const dpr = Math.min(devicePixelRatio || 1, 2); c.width = c.height = box * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0); }
+    const mode = $("#app").dataset.mode;
+    const target = { idle: .28, thinking: .75, speaking: .9, listening: 1 }[mode] ?? .3;
+    energy += (target - energy) * Math.min(1, dt * 4); rot += dt * (.15 + energy * .9);
+    const s = size, cx = s / 2, cy = s / 2, R = s * .3, warm = mode === "listening";
+    const col = warm ? "255,206,140" : "205,245,225";
+    g.clearRect(0, 0, s, s);
+    // halo
+    const pulse = mode === "speaking" ? .5 + .5 * Math.sin(now / 90) : .5 + .5 * Math.sin(now / 900);
+    let gr = g.createRadialGradient(cx, cy, 0, cx, cy, R * 1.9); gr.addColorStop(0, `rgba(${col},${.22 + energy * .25 * pulse})`); gr.addColorStop(1, `rgba(${col},0)`);
+    g.fillStyle = gr; g.beginPath(); g.arc(cx, cy, R * 1.9, 0, 7); g.fill();
+    // raios
+    g.lineWidth = .7;
+    for (const [a, len, ph] of rays) { const L = R * (len + .35 * energy * (.5 + .5 * Math.sin(now / 300 + ph * 9))); const aa = a + rot * .15;
+      g.strokeStyle = `rgba(${col},${.08 + .25 * energy * ph})`; g.beginPath(); g.moveTo(cx + Math.cos(aa) * R * .9, cy + Math.sin(aa) * R * .9); g.lineTo(cx + Math.cos(aa) * (R + L), cy + Math.sin(aa) * (R + L)); g.stroke(); }
+    // esfera de partículas
+    const cr = Math.cos(rot), sr = Math.sin(rot), tilt = .45, ct = Math.cos(tilt), st = Math.sin(tilt);
+    for (const [x0, y0, z0, k] of pts) {
+      const x = x0 * cr - z0 * sr, z1 = x0 * sr + z0 * cr, y = y0 * ct - z1 * st, z = y0 * st + z1 * ct;
+      const p = 1 / (1.8 - z * .5), px = cx + x * R * p, py = cy + y * R * p, a = Math.max(0, .15 + (z + 1) * .4) * k;
+      g.fillStyle = `rgba(${col},${a})`; g.fillRect(px, py, 1.3 + (z + 1) * .6, 1.3 + (z + 1) * .6);
+    }
+    // núcleo
+    gr = g.createRadialGradient(cx, cy, 0, cx, cy, R * .55); gr.addColorStop(0, "rgba(255,255,255,.95)"); gr.addColorStop(.25, `rgba(${col},.55)`); gr.addColorStop(1, `rgba(${col},0)`);
+    g.fillStyle = gr; g.beginPath(); g.arc(cx, cy, R * .55 * (1 + energy * .15 * pulse), 0, 7); g.fill();
+    // anel de marcações
+    g.strokeStyle = `rgba(${col},.45)`; g.lineWidth = 1.2;
+    for (let i = 0; i < 48; i++) { const a = i / 48 * Math.PI * 2 - rot * .2, r1 = R * 1.42, r2 = r1 + (i % 4 === 0 ? 7 : 3);
+      g.beginPath(); g.moveTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1); g.lineTo(cx + Math.cos(a) * r2, cy + Math.sin(a) * r2); g.stroke(); }
+    if (!reduceMotion) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  return true;
+})();
+
+function renderSys() {
+  const set = (id, txt, cls) => { const el = $(id); if (el) { el.textContent = txt; el.className = cls || ""; } };
+  set("#sysAI", S.settings.apiKey ? "Gemini · conectada" : "sem chave", S.settings.apiKey ? "" : "warn");
+  set("#sysWake", S.settings.wake ? `ligada · "${S.settings.wakePhrase || S.settings.name}"` : "desligada", S.settings.wake ? "" : "off");
+  const ch = (CHARACTERS[S.settings.character] || CHARACTERS.natural).nome;
+  set("#sysVoice", !S.settings.speak ? "muda" : S.settings.engine === "browser" ? "navegador" : ch, S.settings.speak ? "" : "off");
+  set("#sysNet", navigator.onLine ? "online" : "sem internet", navigator.onLine ? "" : "warn");
+  const fm = $("#footMode"); if (fm) fm.textContent = $("#stateTxt").textContent;
+  const sc = $("#sysClock"); if (sc) sc.textContent = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+new MutationObserver(renderSys).observe($("#stateTxt"), { childList: true, characterData: true, subtree: true });
+setInterval(renderSys, 1000);
 
 /* ---------- início ---------- */
 let v = "chat"; try { v = localStorage.getItem("nova-view") || "chat"; } catch (e) {}
