@@ -43,3 +43,13 @@ A chave fica salva só no aparelho. Faça isso no computador e no celular.
 - **Lembretes:** tocam e notificam enquanto a Vega estiver aberta (mesmo em segundo plano no computador). Com o app totalmente fechado, não chegam.
 - **Notícias:** mude as fontes em `scripts/feeds.json`. A atualização roda a cada 3 horas, das 6h às 21h.
 - **Escuta contínua no celular:** o Android pode emitir um som a cada reinício do microfone. No celular, prefira o botão de microfone.
+
+## Widget no iPhone
+
+1. Instale o app gratuito **Scriptable** na App Store.
+2. No iPhone, abra `https://raw.githubusercontent.com/axtanso/vega-assistente/main/widget/vega-widget.js`, toque e segure no texto, **Selecionar Tudo** e **Copiar**.
+3. No Scriptable, toque em **+**, cole o código, renomeie o script para **VEGA** e toque em ▶ (permita acesso ao Calendário e aos Lembretes).
+4. Na tela de início, toque e segure num espaço vazio, toque em **+**, escolha **Scriptable**, o tamanho **Grande** e **Adicionar Widget**.
+5. Toque e segure no widget, **Editar Widget**, em **Script** escolha **VEGA**.
+
+Os temas das notícias ficam na lista `INTERESSES`, no início do script.
