@@ -362,6 +362,8 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:10px
     <hr class="sep">
     <div class="field"><label for="sKey">Chave da API do Gemini</label><input id="sKey" type="password" autocomplete="off"><small>Crie em <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a></small></div>
     <div class="field"><label for="sModel">Modelo</label><input id="sModel"><small>Padrão: gemini-flash-latest (gratuito)</small></div>
+    <div class="field"><label for="sTavily">Chave de busca Tavily (recomendada)</label><input id="sTavily" type="password" autocomplete="off" placeholder="tvly-..."><small>Grátis, 1.000 buscas por mês, sem cartão: crie em <a href="https://app.tavily.com" target="_blank" rel="noopener">app.tavily.com</a>. Sem ela, a Vega usa uma busca reserva sem chave.</small></div>
+    <div class="row" style="margin-bottom:12px;align-items:center"><button class="btn ghost" id="searchTest" type="button">Testar busca</button><small id="searchOut" style="color:var(--muted)"></small></div>
     <div class="toggle"><label for="sNotif">Notificações dos lembretes</label><input type="checkbox" id="sNotif"></div>
     <hr class="sep">
     <div class="row">

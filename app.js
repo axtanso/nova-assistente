@@ -6,7 +6,7 @@ const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString
 const KEY = "nova-v1";
 const DEF = {
   tasks: [], memory: [], chat: [], brief: null,
-  settings: { name: "Vega", user: "Luís Fernando", city: "", speak: true, loop: false, voice: "", rate: 1.05, engine: "gemini", character: "natural", ttsVoice: "Puck", ttsStyle: "", ttsModel: "gemini-3.8-flash-tts", wakePhrase: "Vega",
+  settings: { name: "Vega", user: "Luís Fernando", city: "", speak: true, loop: false, voice: "", rate: 1.05, engine: "gemini", character: "natural", ttsVoice: "Puck", ttsStyle: "", ttsModel: "gemini-3.8-flash-tts", tavilyKey: "", wakePhrase: "Vega",
               apiKey: "", model: "gemini-flash-latest", notif: false, wake: false }
 };
 let S = load();
@@ -464,7 +464,9 @@ Clima (dados reais do Open-Meteo): ${weather ? JSON.stringify(weather) : "indisp
 Notícias (manchetes reais de feeds RSS${newsAt ? ", atualizadas em " + newsAt : ""}): ${news.length ? JSON.stringify(news.slice(0, 15).map(n => ({ titulo: n.titulo, fonte: n.fonte, link: n.link }))) : "indisponíveis"}
 Regras:
 - Respostas curtas e diretas, porque costumam ser lidas em voz alta. Texto longo só para conteúdo pedido (roteiro, post, legenda, e-mail).
-- Nunca invente notícias, números, cotações, clima ou fatos. Use só os dados acima. Se pedirem algo atual que não está aqui, diga que não tem esse dado. Ao citar notícia, diga a fonte.
+- Nunca invente notícias, números, horários, preços, cotações, clima ou fatos.
+- Para qualquer informação atual ou local que não esteja acima (programação de cinema, horários, eventos, preços, lojas, placares, notícias específicas, endereços), use a ferramenta pesquisar_web. A cidade do usuário é ${S.settings.city || "desconhecida (pergunte se for necessário)"}: inclua a cidade na busca quando o pedido for local. Se os resultados trouxerem só links sem o dado, use ler_pagina no resultado mais promissor (por exemplo, o site do cinema ou do Ingresso.com).
+- Responda só com o que as fontes mostram e cite de onde veio (nome do site). Se a busca não trouxer o dado, diga isso e passe o link da busca para o usuário conferir. Avise quando um horário puder ter mudado.
 - Use as ferramentas para criar, concluir ou apagar tarefas e para salvar ou apagar memórias quando o usuário pedir. Lembrete com horário: 'quando' em ISO local (AAAA-MM-DDTHH:MM). Depois de usar uma ferramenta, confirme em uma frase.
 - Ao criar conteúdo para publicar, escreva já otimizado para SEO da plataforma de destino (palavras-chave naturais, título forte, hashtags quando for rede social), em linguagem humana.
 - Não use tabelas. Use listas curtas só quando ajudarem.`;
@@ -480,8 +482,59 @@ const TOOLS = [
   { name: "salvar_memoria", description: "Guarda um fato duradouro sobre o usuário quando ele pedir para lembrar algo.", parameters: { type: "object", properties: { fato: { type: "string" } }, required: ["fato"] },
     run(i) { const f = String(i.fato || "").trim().slice(0, 300); if (!f) throw new Error("vazio"); S.memory.push({ id: uid(), text: f, created: new Date().toISOString() }); if (S.memory.length > 200) S.memory.shift(); save(); render(); return { ok: true }; } },
   { name: "apagar_memoria", description: "Apaga uma memória pelo id quando o usuário pedir para esquecer.", parameters: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
-    run(i) { const k = S.memory.findIndex(x => x.id === String(i.id)); if (k < 0) throw new Error("não encontrada"); const [m] = S.memory.splice(k, 1); save(); render(); toast("Memória apagada", false, () => { S.memory.splice(k, 0, m); save(); render(); }); return { ok: true }; } }
+    run(i) { const k = S.memory.findIndex(x => x.id === String(i.id)); if (k < 0) throw new Error("não encontrada"); const [m] = S.memory.splice(k, 1); save(); render(); toast("Memória apagada", false, () => { S.memory.splice(k, 0, m); save(); render(); }); return { ok: true }; } },
+  { name: "pesquisar_web", description: "Pesquisa na internet informações atuais ou locais (cinema, horários, eventos, preços, lugares, notícias). Retorna resultados com título, link e trecho.", parameters: { type: "object", properties: { consulta: { type: "string", description: "Termos da busca em português, incluindo a cidade quando for algo local" } }, required: ["consulta"] },
+    async run(i) { return webSearch(String(i.consulta || "").slice(0, 300)); } },
+  { name: "ler_pagina", description: "Abre um link encontrado na pesquisa e devolve o texto da página (por exemplo, a programação de um cinema).", parameters: { type: "object", properties: { url: { type: "string" } }, required: ["url"] },
+    async run(i) { return readPage(String(i.url || "")); } }
 ];
+
+/* ---------- busca na web ---------- */
+// 1) Tavily (chave grátis, 1.000 buscas/mês)  2) DuckDuckGo lido pelo Jina Reader (sem chave)  3) link de busca pronto
+const googleLink = q => "https://www.google.com/search?q=" + encodeURIComponent(q);
+let lastSearchVia = "";
+async function tavilySearch(q) {
+  const key = (S.settings.tavilyKey || "").trim(); if (!key) throw new Error("sem chave");
+  const r = await fetch("https://api.tavily.com/search", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + key },
+    body: JSON.stringify({ query: q, search_depth: "basic", max_results: 6, include_answer: "basic", country: "brazil" }), signal: AbortSignal.timeout(15000) });
+  if (r.status === 401 || r.status === 403) throw new Error("chave Tavily inválida");
+  if (r.status === 429 || r.status === 432) throw new Error("limite mensal do Tavily");
+  if (!r.ok) throw new Error("Tavily " + r.status);
+  const d = await r.json();
+  return { via: "Tavily", resumo: d.answer || undefined, resultados: (d.results || []).slice(0, 6).map(x => ({ titulo: x.title, link: x.url, trecho: String(x.content || "").slice(0, 500) })) };
+}
+function undoDdg(t) { return t.replace(/https?:\/\/duckduckgo\.com\/l\/\?uddg=([^&)\s]+)[^)\s]*/g, (m, u) => { try { return decodeURIComponent(u); } catch (e) { return m; } }); }
+async function jinaSearch(q) {
+  const target = "https://html.duckduckgo.com/html/?kl=br-pt&q=" + encodeURIComponent(q);
+  const r = await fetch("https://r.jina.ai/" + target, { signal: AbortSignal.timeout(20000) });
+  if (!r.ok) throw new Error("Jina " + r.status);
+  const t = undoDdg(await r.text());
+  if (t.length < 200 || /captcha|unusual traffic|anomaly/i.test(t)) throw new Error("busca bloqueada");
+  const i = t.indexOf("Markdown Content:");
+  return { via: "DuckDuckGo", resultados_em_texto: (i >= 0 ? t.slice(i + 17) : t).replace(/!\[[^\]]*\]\([^)]*\)/g, "").slice(0, 7000) };
+}
+async function webSearch(q) {
+  if (!q) throw new Error("consulta vazia");
+  if (!navigator.onLine) return { erro: "sem internet", link_da_busca: googleLink(q) };
+  setMode("thinking", "Pesquisando na web");
+  const erros = [];
+  for (const [nome, fn] of [["Tavily", tavilySearch], ["DuckDuckGo", jinaSearch]]) {
+    if (nome === "Tavily" && !S.settings.tavilyKey) continue;
+    try { const res = await fn(q); lastSearchVia = res.via; return { ...res, link_da_busca: googleLink(q) }; }
+    catch (e) { erros.push(nome + ": " + (e.name === "TypeError" ? "bloqueado pelo navegador" : e.message)); }
+  }
+  return { erro: "Nenhuma busca funcionou agora (" + erros.join("; ") + ").", link_da_busca: googleLink(q) };
+}
+async function readPage(url) {
+  if (!/^https?:\/\//.test(url)) throw new Error("link inválido");
+  setMode("thinking", "Lendo a página");
+  try {
+    const r = await fetch("https://r.jina.ai/" + url, { signal: AbortSignal.timeout(25000) });
+    if (!r.ok) throw new Error("status " + r.status);
+    const t = await r.text(); const i = t.indexOf("Markdown Content:");
+    return { link: url, texto: (i >= 0 ? t.slice(i + 17) : t).replace(/!\[[^\]]*\]\([^)]*\)/g, "").replace(/\n{3,}/g, "\n\n").slice(0, 9000) };
+  } catch (e) { return { erro: "Não consegui abrir a página (" + (e.name === "TypeError" ? "bloqueada" : e.message) + ").", link: url }; }
+}
 const FALLBACK_MODELS = ["gemini-flash-lite-latest", "gemini-2.5-flash-lite"];
 class AIError extends Error { constructor(msg, code) { super(msg); this.code = code; } }
 async function gemini(contents, { system, tools, signal }) {
@@ -524,17 +577,17 @@ async function gemini(contents, { system, tools, signal }) {
 async function ask(history, signal) {
   const contents = history.map(m => ({ role: m.role === "user" ? "user" : "model", parts: [{ text: m.content }] }));
   const system = context();
-  for (let round = 0; round < 5; round++) {
+  for (let round = 0; round < 6; round++) {
     const content = await gemini(contents, { system, tools: true, signal });
     const parts = content.parts || [];
     const calls = parts.filter(p => p.functionCall);
     if (!calls.length) return parts.filter(p => p.text && !p.thought).map(p => p.text).join("").trim();
     contents.push(content);
-    const responses = calls.map(p => {
+    const responses = await Promise.all(calls.map(async p => {
       const tool = TOOLS.find(t => t.name === p.functionCall.name); let result;
-      try { result = tool ? tool.run(p.functionCall.args || {}) : { erro: "ferramenta desconhecida" }; } catch (e) { result = { erro: e.message }; }
+      try { result = tool ? await tool.run(p.functionCall.args || {}) : { erro: "ferramenta desconhecida" }; } catch (e) { result = { erro: e.message }; }
       return { functionResponse: { name: p.functionCall.name, response: { result } } };
-    });
+    }));
     contents.push({ role: "user", parts: responses });
   }
   return "Feito.";
@@ -620,7 +673,7 @@ function importData(file) {
 }
 
 /* ---------- eventos ---------- */
-const CHIPS = [["Meu dia", "O que tenho para hoje e o que devo priorizar?"], ["Clima", "Como está o tempo hoje e amanhã?"], ["Notícias", "Quais as principais notícias de agora?"],
+const CHIPS = [["Meu dia", "O que tenho para hoje e o que devo priorizar?"], ["Clima", "Como está o tempo hoje e amanhã?"], ["Notícias", "Quais as principais notícias de agora?"], ["Pesquisar", "Pesquise na internet: "], ["Cinema", "Quais filmes estão passando hoje nos cinemas da minha cidade e em quais horários?"],
   ["Criar lembrete", "Me lembre de "], ["Ideias de post", "Me dê 5 ideias de post para Instagram sobre "], ["Roteiro curto", "Escreva um roteiro de vídeo curto de 45 segundos sobre "],
   ["Legenda", "Escreva uma legenda com hashtags para "], ["Revisar texto", "Revise este texto e deixe mais claro:\n"]];
 CHIPS.forEach(([l, p]) => {
@@ -666,6 +719,15 @@ $("#sampleBtn").onclick = async () => {
   await speak(`Oi, ${(S.settings.user || "").split(" ")[0]}! Esta é a minha voz. O que vamos fazer hoje?`, true);
   S.settings = keep; b.disabled = false; b.textContent = "▶ Ouvir amostra";
 };
+$("#searchTest").onclick = async () => {
+  const out = $("#searchOut"), keep = S.settings.tavilyKey; S.settings.tavilyKey = $("#sTavily").value.trim();
+  out.textContent = "Testando…"; const q = "cinema " + (S.settings.city || "São Paulo") + " programação";
+  const lines = [];
+  if (S.settings.tavilyKey) { try { const r = await tavilySearch(q); lines.push("Tavily: funcionando (" + r.resultados.length + " resultados)"); } catch (e) { lines.push("Tavily: " + (e.name === "TypeError" ? "bloqueado pelo navegador" : e.message)); } }
+  else lines.push("Tavily: sem chave");
+  try { const r = await jinaSearch(q); lines.push("Busca sem chave: funcionando"); } catch (e) { lines.push("Busca sem chave: " + (e.name === "TypeError" ? "bloqueada pelo navegador" : e.message)); }
+  S.settings.tavilyKey = keep; setMode("idle"); out.textContent = lines.join(" · ");
+};
 function openSetup() { $("#keyIn").value = S.settings.apiKey || ""; $("#cityIn").value = S.settings.city || ""; $("#setup").hidden = false; }
 $("#setupSave").onclick = () => {
   const k = $("#keyIn").value.trim(); if (!k) { toast("Cole a chave do Gemini para continuar.", true); return; }
@@ -676,14 +738,14 @@ $("#setupSkip").onclick = () => { $("#setup").hidden = true; try { localStorage.
 $("#setBtn").onclick = () => {
   const s = S.settings; $("#sName").value = s.name; $("#sUser").value = s.user; $("#sCity").value = s.city; $("#sSpeak").checked = s.speak; $("#sLoop").checked = s.loop;
   $("#sVoice").value = s.voice || ""; $("#sRate").value = s.rate; $("#sEngine").value = s.engine; $("#sChar").value = s.character;
-  $("#sWake").value = s.wakePhrase || ""; $("#sTtsVoice").value = s.ttsVoice; $("#sTtsStyle").value = s.ttsStyle; syncVoiceUI(); $("#sKey").value = s.apiKey; $("#sModel").value = s.model; $("#sNotif").checked = s.notif; $("#sheet").hidden = false;
+  $("#sWake").value = s.wakePhrase || ""; $("#sTtsVoice").value = s.ttsVoice; $("#sTtsStyle").value = s.ttsStyle; syncVoiceUI(); $("#sKey").value = s.apiKey; $("#sModel").value = s.model; $("#sTavily").value = s.tavilyKey || ""; $("#sNotif").checked = s.notif; $("#sheet").hidden = false;
 };
 async function closeSet() {
   const s = S.settings, oldCity = s.city, oldName = s.name;
   s.name = $("#sName").value.trim() || "Vega"; s.user = $("#sUser").value.trim() || "você"; s.city = $("#sCity").value.trim();
   s.speak = $("#sSpeak").checked; s.loop = $("#sLoop").checked; s.voice = $("#sVoice").value; s.rate = +$("#sRate").value || 1;
   s.engine = $("#sEngine").value; s.character = $("#sChar").value; s.ttsVoice = $("#sTtsVoice").value; s.ttsStyle = $("#sTtsStyle").value.trim().slice(0, 300); s.wakePhrase = $("#sWake").value.trim().slice(0, 60) || "Vega";
-  s.apiKey = $("#sKey").value.trim(); s.model = $("#sModel").value.trim() || "gemini-flash-latest";
+  s.apiKey = $("#sKey").value.trim(); s.model = $("#sModel").value.trim() || "gemini-flash-latest"; s.tavilyKey = $("#sTavily").value.trim();
   const wantNotif = $("#sNotif").checked;
   if (wantNotif && "Notification" in window && Notification.permission !== "granted") { const p = await Notification.requestPermission(); s.notif = p === "granted"; if (!s.notif) toast("Notificações bloqueadas pelo navegador.", true); }
   else s.notif = wantNotif && "Notification" in window;
