@@ -1,6 +1,6 @@
 // Service worker da Vega: abre sem internet e mantém o app atualizado.
-const VERSION = "vega-v9";
-const SHELL = ["./", "index.html", "app.js", "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png"];
+const VERSION = "vega-v10";
+const SHELL = ["./", "index.html", "app.js", "contas.js", "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

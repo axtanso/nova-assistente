@@ -53,3 +53,25 @@ A chave fica salva só no aparelho. Faça isso no computador e no celular.
 5. Toque e segure no widget, **Editar Widget**, em **Script** escolha **VEGA**.
 
 Os temas das notícias ficam na lista `INTERESSES`, no início do script.
+
+## Conectar Gmail e Google Agenda (uma vez só)
+
+1. Abra [console.cloud.google.com](https://console.cloud.google.com) com a sua conta Google e crie um projeto chamado **VEGA**.
+2. Em **APIs e serviços → Biblioteca**, ative a **Gmail API** e a **Google Calendar API**.
+3. Em **Google Auth Platform** (ou **Tela de consentimento OAuth**), clique em **Começar**: nome **VEGA**, seu e-mail, público **Externo**. Depois, em **Público → Usuários de teste**, adicione o seu Gmail.
+4. Em **Clientes → Criar cliente**, escolha **Aplicativo da Web** e, em **Origens JavaScript autorizadas**, coloque `https://axtanso.github.io`. Crie e copie o **ID do cliente**.
+5. Na VEGA: **Ajustes → Contas**, cole o ID e toque em **Conectar Google**. O Google avisa que o app não é verificado: toque em **Avançado → Acessar VEGA**. É o seu próprio app.
+
+O acesso do Google dura 1 hora e se renova sozinho no próximo toque na tela.
+
+## Conectar Outlook (uma vez só)
+
+1. Abra [entra.microsoft.com](https://entra.microsoft.com) com a sua conta Microsoft e vá em **Registros de aplicativo → Novo registro**.
+2. Nome **VEGA**. Em tipos de conta, escolha **contas em qualquer diretório organizacional e contas pessoais da Microsoft**.
+3. Em **URI de redirecionamento**, escolha **Aplicativo de página única (SPA)** e coloque `https://axtanso.github.io/vega-assistente/`. Clique em **Registrar**.
+4. Copie o **ID do aplicativo (cliente)**.
+5. Na VEGA: **Ajustes → Contas**, cole o ID e toque em **Conectar Outlook**.
+
+## Privacidade das contas
+
+A VEGA só lê e-mails e cria eventos quando você pede. Para a IA vão apenas remetente, assunto e um trecho de até 160 caracteres de cada e-mail. Ela não envia nem apaga e-mails, e o acesso fica salvo só no aparelho. Para revogar: Google em [myaccount.google.com/permissions](https://myaccount.google.com/permissions) e Microsoft em [account.live.com/consent/Manage](https://account.live.com/consent/Manage).

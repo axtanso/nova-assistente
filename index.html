@@ -247,6 +247,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:10px
         </div>
         <button class="btn" id="briefBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Ouvir briefing</button>
         <div class="brief-text" id="briefText"></div>
+        <div id="calBox" hidden style="margin-top:12px"><div class="group-title" style="display:flex;justify-content:space-between">Agenda conectada <span class="tag" id="calTag"></span></div><div id="calList"></div></div>
       </div>
       <div class="panel">
         <div class="ph"><h2>Tarefas e lembretes</h2><span class="tag" id="taskCount"></span></div>
@@ -296,6 +297,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:10px
         <div class="sysrow"><span>Escuta</span><b id="sysWake">—</b></div>
         <div class="sysrow"><span>Voz</span><b id="sysVoice">—</b></div>
         <div class="sysrow"><span>Rede</span><b id="sysNet">—</b></div>
+        <div class="sysrow"><span>Contas</span><b id="sysAcc">—</b></div>
       </div>
       <div class="panel">
         <div class="ph"><h2>Memória</h2><span class="tag" id="memCount"></span></div>
@@ -364,6 +366,14 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:10px
     <div class="field"><label for="sModel">Modelo</label><input id="sModel"><small>Padrão: gemini-flash-latest (gratuito)</small></div>
     <div class="field"><label for="sTavily">Chave de busca Tavily (recomendada)</label><input id="sTavily" type="password" autocomplete="off" placeholder="tvly-..."><small>Grátis, 1.000 buscas por mês, sem cartão: crie em <a href="https://app.tavily.com" target="_blank" rel="noopener">app.tavily.com</a>. Sem ela, a Vega usa uma busca reserva sem chave.</small></div>
     <div class="row" style="margin-bottom:12px;align-items:center"><button class="btn ghost" id="searchTest" type="button">Testar busca</button><small id="searchOut" style="color:var(--muted)"></small></div>
+    <hr class="sep">
+    <div class="ph" style="margin-bottom:6px"><h2>Contas</h2></div>
+    <div class="field"><label for="sGoogleId">ID do cliente Google (Gmail e Agenda)</label><input id="sGoogleId" autocomplete="off" placeholder="....apps.googleusercontent.com"></div>
+    <div class="row" style="margin-bottom:12px;align-items:center"><button class="btn" id="gBtn" type="button">Conectar Google</button><small id="gStatus" style="color:var(--muted)"></small></div>
+    <div class="field"><label for="sMsId">ID do aplicativo Microsoft (Outlook)</label><input id="sMsId" autocomplete="off" placeholder="00000000-0000-0000-0000-000000000000"></div>
+    <div class="row" style="margin-bottom:12px;align-items:center"><button class="btn" id="mBtn" type="button">Conectar Outlook</button><small id="mStatus" style="color:var(--muted)"></small></div>
+    <p class="hint" style="margin-top:0">A VEGA só lê e-mails (remetente, assunto e um trecho curto vão para a IA) e cria eventos quando você pede. Ela não envia nem apaga e-mails. O acesso fica só neste aparelho.</p>
+    <hr class="sep">
     <div class="toggle"><label for="sNotif">Notificações dos lembretes</label><input type="checkbox" id="sNotif"></div>
     <hr class="sep">
     <div class="row">
@@ -377,6 +387,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:10px
 
 <div class="toast" id="toast" hidden></div>
 
+<script src="contas.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
