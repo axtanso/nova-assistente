@@ -1,54 +1,159 @@
 {
- "atualizado": "2026-10-15T18:57:19.924Z",
+ "atualizado": "2026-10-15T21:47:06.473Z",
  "itens": [
   {
-   "titulo": "Contratação emergencial de R$ 12,2 milhões prevê obras no sistema de água de Várzea Grande (MT)",
-   "link": "https://g1.globo.com/mt/mato-grosso/noticia/2026/10/15/contratacao-emergencial-de-r-122-milhoes-preve-obras-no-sistema-de-agua-de-varzea-grande-mt.ghtml",
+   "titulo": "Motociclista fica ferida após queda na Via Dutra, em Piraí",
+   "link": "https://g1.globo.com/rj/sul-do-rio-costa-verde/noticia/2026/10/15/motociclista-fica-ferida-apos-queda-na-via-dutra-em-pirai.ghtml",
    "fonte": "g1",
    "categoria": "Geral",
-   "data": "2026-10-15T18:47:17.000Z"
+   "data": "2026-10-15T21:43:31.000Z"
   },
   {
-   "titulo": "Netflix fica até 23,9% mais cara no Brasil; confira os valores",
+   "titulo": "Assista ao BATV da TV Subaé",
+   "link": "https://g1.globo.com/ba/feira-de-santana-regiao/ao-vivo/assista-aos-telejornais-da-tv-subae.ghtml",
+   "fonte": "g1",
+   "categoria": "Geral",
+   "data": "2026-10-15T21:42:45.000Z"
+  },
+  {
+   "titulo": "VÍDEOS: MG2 de quinta-feira, 15 de outubro de 2026",
+   "link": "https://g1.globo.com/mg/minas-gerais/videos-mg2/playlist/videos-mg2-de-quinta-feira-15-de-outubro-de-2026.ghtml",
+   "fonte": "g1",
+   "categoria": "Geral",
+   "data": "2026-10-15T21:41:19.000Z"
+  },
+  {
+   "titulo": "Senado tira da pauta discussão de PEC da Segurança Pública",
+   "link": "https://g1.globo.com/politica/ao-vivo/pec-seguranca-publica-senado.ghtml",
+   "fonte": "g1",
+   "categoria": "Geral",
+   "data": "2026-10-15T21:39:55.000Z"
+  },
+  {
+   "titulo": "Globo entrevista candidatos ao governo do DF no 2º turno das eleições",
+   "link": "https://g1.globo.com/df/distrito-federal/eleicoes/2026/ao-vivo/entrevista-candidatos-df-segundo-turno.ghtml",
+   "fonte": "g1",
+   "categoria": "Geral",
+   "data": "2026-10-15T21:39:14.000Z"
+  },
+  {
+   "titulo": "Após quatro dias sem água, Sumaré retoma captação e prevê normalizar abastecimento até sábado",
+   "link": "https://g1.globo.com/sp/campinas-regiao/noticia/2026/10/15/dias-sem-agua-sumare-retoma-captacao-preve-normalizar-abastecimento-sabado.ghtml",
+   "fonte": "g1",
+   "categoria": "Geral",
+   "data": "2026-10-15T21:38:17.000Z"
+  },
+  {
+   "titulo": "Bom e barato: Galaxy Buds Core recebe 44% de desconto depois de meses",
+   "link": "https://tecnoblog.net/achados/bom-e-barato-galaxy-buds-core-recebe-44-de-desconto-depois-de-meses/",
+   "fonte": "Tecnoblog",
+   "categoria": "Tecnologia",
+   "data": "2026-10-15T20:55:11.000Z"
+  },
+  {
+   "titulo": "Brasil deve voltar ao top 8 das maiores economias do mundo em 2027, prevê FMI",
+   "link": "https://g1.globo.com/economia/noticia/2026/10/15/brasil-deve-voltar-ao-top-8-das-maiores-economias-do-mundo-em-2027-preve-fmi.ghtml",
+   "fonte": "g1 Economia",
+   "categoria": "Economia",
+   "data": "2026-10-15T20:41:29.000Z"
+  },
+  {
+   "titulo": "Casas Bahia fecha acordo que prevê mais de R$ 33 milhões para trabalhadores demitidos",
+   "link": "https://g1.globo.com/trabalho-e-carreira/noticia/2026/10/15/casas-bahia-acordo-demissao-massa.ghtml",
+   "fonte": "g1 Economia",
+   "categoria": "Economia",
+   "data": "2026-10-15T20:33:18.000Z"
+  },
+  {
+   "titulo": "Governo quer levar internet a 72 mil km de rodovias até 2030; veja como vai funcionar",
+   "link": "https://olhardigital.com.br/2026/10/15/pro/governo-quer-levar-internet-a-72-mil-km-de-rodovias-ate-2030-veja-como-vai-funcionar/",
+   "fonte": "Olhar Digital",
+   "categoria": "Tecnologia",
+   "data": "2026-10-15T20:27:54.000Z"
+  },
+  {
+   "titulo": "TRE-RJ proclama Douglas Ruas eleito para o governo do Rio de Janeiro",
+   "link": "https://agenciabrasil.ebc.com.br/justica/noticia/2026-10/tre-rj-proclama-douglas-ruas-eleito-para-o-governo-do-rio-de-janeiro",
+   "fonte": "Agência Brasil",
+   "categoria": "Geral",
+   "data": "2026-10-15T20:27:00.000Z"
+  },
+  {
+   "titulo": "iPhone Duo: reparo pode custar até R$ 16,5 mil no Brasil",
+   "link": "https://tecnoblog.net/noticias/conserto-do-iphone-duo-pode-custar-ate-r-165-mil-no-brasil/",
+   "fonte": "Tecnoblog",
+   "categoria": "Tecnologia",
+   "data": "2026-10-15T20:12:52.000Z"
+  },
+  {
+   "titulo": "Netflix aumenta preços no Brasil: plano mais caro chega a R$ 71,90 por mês",
+   "link": "https://olhardigital.com.br/2026/10/15/cinema-e-streaming/netflix-aumenta-precos-no-brasil-plano-mais-caro-chega-a-r-71-90-por-mes/",
+   "fonte": "Olhar Digital",
+   "categoria": "Tecnologia",
+   "data": "2026-10-15T20:05:12.000Z"
+  },
+  {
+   "titulo": "Vazamento expõe dados de clientes da Ticketmaster no Brasil",
+   "link": "https://olhardigital.com.br/2026/10/15/seguranca/vazamento-expoe-dados-de-clientes-da-ticketmaster-no-brasil/",
+   "fonte": "Olhar Digital",
+   "categoria": "Tecnologia",
+   "data": "2026-10-15T19:45:26.000Z"
+  },
+  {
+   "titulo": "Petrobras bate recorde e chega a R$ 800 bilhões em valor de mercado; ações sobem até 110% em 2026",
+   "link": "https://g1.globo.com/economia/noticia/2026/10/15/petrobras-bate-recorde-e-chega-a-r-800-bilhoes-em-valor-de-mercado-acoes-sobem-ate-110percent-em-2026.ghtml",
+   "fonte": "g1 Economia",
+   "categoria": "Economia",
+   "data": "2026-10-15T19:31:03.000Z"
+  },
+  {
+   "titulo": "Volvo aposta na Nvidia para criar carros que dirigem sozinhos nas cidades até 2030",
+   "link": "https://olhardigital.com.br/2026/10/15/carros-e-tecnologia/volvo-aposta-na-nvidia-para-criar-carros-que-dirigem-sozinhos-nas-cidades-ate-2030/",
+   "fonte": "Olhar Digital",
+   "categoria": "Tecnologia",
+   "data": "2026-10-15T19:26:14.000Z"
+  },
+  {
+   "titulo": "De olho na liderança: dupla de Stefani vence estreia no WTA de Wuhan",
+   "link": "https://agenciabrasil.ebc.com.br/esportes/noticia/2026-10/de-olho-na-lideranca-dupla-de-stefani-vence-estreia-no-wta-de-wuhan",
+   "fonte": "Agência Brasil",
+   "categoria": "Geral",
+   "data": "2026-10-15T19:19:00.000Z"
+  },
+  {
+   "titulo": "Participação do Brasil em pesquisas clínicas cresce após marco legal",
+   "link": "https://agenciabrasil.ebc.com.br/saude/noticia/2026-10/participacao-do-brasil-em-pesquisas-clinicas-cresce-apos-marco-legal",
+   "fonte": "Agência Brasil",
+   "categoria": "Geral",
+   "data": "2026-10-15T19:17:00.000Z"
+  },
+  {
+   "titulo": "Edge 70 Pro (512 GB) com câmeras de 50 MP tem oferta expressiva na Amazon",
+   "link": "https://tecnoblog.net/achados/edge-70-pro-512-gb-com-cameras-de-50-mp-tem-oferta-expressiva-na-amazon/",
+   "fonte": "Tecnoblog",
+   "categoria": "Tecnologia",
+   "data": "2026-10-15T19:15:41.000Z"
+  },
+  {
+   "titulo": "Deepfakes estão cada vez mais difíceis de detectar, alertam especialistas da OpenAI e Meta",
+   "link": "https://g1.globo.com/tecnologia/noticia/2026/10/15/deepfakes-estao-cada-vez-mais-dificeis-de-detectar-alertam-especialistas-da-openai-e-meta.ghtml",
+   "fonte": "g1 Economia",
+   "categoria": "Economia",
+   "data": "2026-10-15T19:09:31.000Z"
+  },
+  {
+   "titulo": "Incêndios na Amazônia reduzem a absorção de carbono pela floresta",
+   "link": "https://olhardigital.com.br/2026/10/15/ciencia-e-espaco/incendios-na-amazonia-reduzem-a-absorcao-de-carbono-pela-floresta/",
+   "fonte": "Olhar Digital",
+   "categoria": "Tecnologia",
+   "data": "2026-10-15T18:57:17.000Z"
+  },
+  {
+   "titulo": "Netflix fica até 23,9% mais cara no Brasil",
    "link": "https://tecnoblog.net/noticias/netflix-fica-mais-cara-no-brasil-premium-chega-a-r-7190/",
    "fonte": "Tecnoblog",
    "categoria": "Tecnologia",
    "data": "2026-10-15T18:43:36.000Z"
-  },
-  {
-   "titulo": "Exame de seleção será aplicado em 15 municípios do TO neste domingo; veja locais de prova",
-   "link": "https://g1.globo.com/to/tocantins/noticia/2026/10/15/exame-de-selecao-sera-aplicado-em-15-municipios-do-to-neste-domingo-veja-locais-de-prova.ghtml",
-   "fonte": "g1",
-   "categoria": "Geral",
-   "data": "2026-10-15T18:43:32.000Z"
-  },
-  {
-   "titulo": "Motociclista morre ao ser atropelado por caminhão em avenida de Rio Preto",
-   "link": "https://g1.globo.com/sp/sao-jose-do-rio-preto-aracatuba/noticia/2026/10/15/acidente-com-morte-em-rio-preto.ghtml",
-   "fonte": "g1",
-   "categoria": "Geral",
-   "data": "2026-10-15T18:43:10.000Z"
-  },
-  {
-   "titulo": "VÍDEOS: AB1 de quinta-feira, 15 de outubro de 2026",
-   "link": "https://g1.globo.com/al/alagoas/edicao/2026/10/15/videos-ab1-de-quinta-feira-15-de-outubro-de-2026.ghtml",
-   "fonte": "g1",
-   "categoria": "Geral",
-   "data": "2026-10-15T18:39:10.000Z"
-  },
-  {
-   "titulo": "Médico suspeito de abusar sexualmente de paciente em hospital de Suzano tem prisão convertida em preventiva",
-   "link": "https://g1.globo.com/sp/mogi-das-cruzes-suzano/noticia/2026/10/15/medico-suspeito-de-abusar-sexualmente-de-paciente-em-hospital-de-suzano-tem-prisao-convertida-em-preventiva.ghtml",
-   "fonte": "g1",
-   "categoria": "Geral",
-   "data": "2026-10-15T18:36:23.000Z"
-  },
-  {
-   "titulo": "Falta de água em Teresina é tema de audiência; concessionária promete melhorias em até 20 dias",
-   "link": "https://g1.globo.com/pi/piaui/noticia/2026/10/15/audiencia-concessionaria-melhorias.ghtml",
-   "fonte": "g1",
-   "categoria": "Geral",
-   "data": "2026-10-15T18:36:01.000Z"
   },
   {
    "titulo": "Mais Microsoft no Linux: antivírus Defender chega aos desktops",
@@ -56,6 +161,13 @@
    "fonte": "Tecnoblog",
    "categoria": "Tecnologia",
    "data": "2026-10-15T18:35:15.000Z"
+  },
+  {
+   "titulo": "Sistemas planetários da Via Láctea dividem-se em duas famílias",
+   "link": "https://olhardigital.com.br/2026/10/15/ciencia-e-espaco/sistemas-planetarios-da-via-lactea-dividem-se-em-duas-familias/",
+   "fonte": "Olhar Digital",
+   "categoria": "Tecnologia",
+   "data": "2026-10-15T18:30:38.000Z"
   },
   {
    "titulo": "Microsoft dará 25 jogos grátis na compra de PCs com Windows",
@@ -72,53 +184,11 @@
    "data": "2026-10-15T18:17:24.000Z"
   },
   {
-   "titulo": "O dia em que a Terra foi atingida pela partícula cósmica mais poderosa de todos os tempos",
-   "link": "https://olhardigital.com.br/2026/10/15/ciencia-e-espaco/o-dia-em-que-a-terra-foi-atingida-pela-particula-cosmica-mais-poderosa-de-todos-os-tempos/",
-   "fonte": "Olhar Digital",
-   "categoria": "Tecnologia",
-   "data": "2026-10-15T18:16:30.000Z"
-  },
-  {
-   "titulo": "Dona do TikTok, ByteDance cria time global focado em conter riscos da IA",
-   "link": "https://olhardigital.com.br/2026/10/15/inteligencia-artificial/dona-do-tiktok-bytedance-cria-time-global-focado-em-conter-riscos-da-ia/",
-   "fonte": "Olhar Digital",
-   "categoria": "Tecnologia",
-   "data": "2026-10-15T18:05:53.000Z"
-  },
-  {
-   "titulo": "Dos arcades aos eSports: relembre a franquia Street Fighter",
-   "link": "https://olhardigital.com.br/2026/10/15/games-e-consoles/dos-arcades-aos-esports-relembre-a-franquia-street-fighter/",
-   "fonte": "Olhar Digital",
-   "categoria": "Tecnologia",
-   "data": "2026-10-15T18:05:33.000Z"
-  },
-  {
-   "titulo": "Entre fãs e publishers: o verdadeiro valor da BGS para desenvolvedores",
-   "link": "https://olhardigital.com.br/2026/10/15/games-e-consoles/bgs-2026-qual-e-o-verdadeiro-valor-da-feira-para-desenvolvedores-de-games/",
-   "fonte": "Olhar Digital",
-   "categoria": "Tecnologia",
-   "data": "2026-10-15T17:59:38.000Z"
-  },
-  {
    "titulo": "União quitou R$ 244 milhões para estados e municípios em setembro",
    "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-10/uniao-quitou-r-244-milhoes-para-estados-e-municipios-em-setembro",
    "fonte": "Agência Brasil",
    "categoria": "Geral",
    "data": "2026-10-15T17:56:00.000Z"
-  },
-  {
-   "titulo": "YouTube pode lançar serviço próprio de audiolivros",
-   "link": "https://tecnoblog.net/noticias/youtube-pode-lancar-servico-proprio-de-audiolivros/",
-   "fonte": "Tecnoblog",
-   "categoria": "Tecnologia",
-   "data": "2026-10-15T17:51:36.000Z"
-  },
-  {
-   "titulo": "Simples Nacional: prazo para adesão termina nesta quinta-feira (15); veja o que muda em 2027",
-   "link": "https://olhardigital.com.br/2026/10/15/pro/simples-nacional-prazo-para-adesao-termina-nesta-quinta-feira-15-veja-o-que-muda-em-2027/",
-   "fonte": "Olhar Digital",
-   "categoria": "Tecnologia",
-   "data": "2026-10-15T17:48:37.000Z"
   },
   {
    "titulo": "Docentes usam inteligência artificial para inovar e engajar alunos",
@@ -135,81 +205,11 @@
    "data": "2026-10-15T17:39:08.000Z"
   },
   {
-   "titulo": "Nintendo Switch 2 aparece mais barato em uma das melhores ofertas vistas",
-   "link": "https://tecnoblog.net/achados/nintendo-switch-2-aparece-mais-barato-em-uma-das-melhores-ofertas-vistas/",
-   "fonte": "Tecnoblog",
-   "categoria": "Tecnologia",
-   "data": "2026-10-15T17:32:58.000Z"
-  },
-  {
-   "titulo": "Stranger Than Heaven mistura combates intensos e drama histórico em novo jogo da SEGA",
-   "link": "https://olhardigital.com.br/2026/10/15/games-e-consoles/stranger-than-heaven-conheca-o-novo-jogo-dos-criadores-de-yakuza/",
-   "fonte": "Olhar Digital",
-   "categoria": "Tecnologia",
-   "data": "2026-10-15T17:28:26.000Z"
-  },
-  {
-   "titulo": "TCU condiciona análise de contas do BC à conclusão da análise de liquidação do Banco Master",
-   "link": "https://g1.globo.com/economia/noticia/2026/10/15/tcu-condiciona-analise-de-contas-do-bc-a-conclusao-da-analise-de-liquidacao-do-banco-master.ghtml",
-   "fonte": "g1 Economia",
-   "categoria": "Economia",
-   "data": "2026-10-15T17:19:31.000Z"
-  },
-  {
-   "titulo": "Galaxy Watch 8 LTE (44 mm) com Gemini atinge preço histórico",
-   "link": "https://tecnoblog.net/achados/galaxy-watch-8-lte-44-mm-com-gemini-atinge-preco-historico/",
-   "fonte": "Tecnoblog",
-   "categoria": "Tecnologia",
-   "data": "2026-10-15T17:03:46.000Z"
-  },
-  {
    "titulo": "Imprensa estrangeira vê vitória de Lula em aprovação do fim da 6x1",
    "link": "https://agenciabrasil.ebc.com.br/internacional/noticia/2026-10/imprensa-estrangeira-ve-vitoria-de-lula-em-aprovacao-do-fim-da-6x1",
    "fonte": "Agência Brasil",
    "categoria": "Geral",
    "data": "2026-10-15T15:37:00.000Z"
-  },
-  {
-   "titulo": "Fim da escala 6x1 traz esperança de mais tempo para família e saúde",
-   "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-10/fim-da-escala-6x1-traz-esperanca-de-mais-tempo-para-familia-e-saude",
-   "fonte": "Agência Brasil",
-   "categoria": "Geral",
-   "data": "2026-10-15T15:27:00.000Z"
-  },
-  {
-   "titulo": "Amazon lança dispositivos de IA que resumem conversas e criam lembretes",
-   "link": "https://g1.globo.com/tecnologia/noticia/2026/10/15/amazon-lanca-dispositivos-de-ia-que-resumem-conversas-e-criam-lembretes.ghtml",
-   "fonte": "g1 Economia",
-   "categoria": "Economia",
-   "data": "2026-10-15T15:13:29.000Z"
-  },
-  {
-   "titulo": "Saúde aprova protocolo para tratar crianças com hemofilia A",
-   "link": "https://agenciabrasil.ebc.com.br/saude/noticia/2026-10/saude-aprova-protocolo-para-tratar-criancas-com-hemofilia",
-   "fonte": "Agência Brasil",
-   "categoria": "Geral",
-   "data": "2026-10-15T15:12:00.000Z"
-  },
-  {
-   "titulo": "Irmãos Batista concluem compra da Avibras, fabricante de armas e foguetes de Jacareí, SP",
-   "link": "https://g1.globo.com/sp/vale-do-paraiba-regiao/noticia/2026/10/15/irmaos-batista-concluem-compra-da-avibras-fabricante-de-armas-e-foguetes-de-jacarei.ghtml",
-   "fonte": "g1 Economia",
-   "categoria": "Economia",
-   "data": "2026-10-15T15:11:21.000Z"
-  },
-  {
-   "titulo": "Para proteger menores, governo pede fiscalização de seis jogos com riscos semelhantes aos das bets",
-   "link": "https://g1.globo.com/economia/noticia/2026/10/15/para-proteger-menores-governo-pede-fiscalizacao-de-seis-jogos-com-riscos-semelhantes-aos-das-bets.ghtml",
-   "fonte": "g1 Economia",
-   "categoria": "Economia",
-   "data": "2026-10-15T15:00:45.000Z"
-  },
-  {
-   "titulo": "São Paulo terá mais chuvas fortes no fim da tarde desta quinta (15)",
-   "link": "https://agenciabrasil.ebc.com.br/geral/noticia/2026-10/sao-paulo-tera-mais-chuvas-fortes-no-fim-da-tarde-desta-quinta-15",
-   "fonte": "Agência Brasil",
-   "categoria": "Geral",
-   "data": "2026-10-15T15:00:00.000Z"
   }
  ]
 }
